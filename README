@@ -1,3 +1,18 @@
+# LiteDesk
+
+Peppermint.sh no longer appears to be maintained and was left in an unusable state. I would contribute but I have no desire to learn Typescript as a Network Engineer. Thus LiteDesk.
+
+It is barebones and simple. No Databases. I don't like them. User Accounts and Tickets databases are json files for simplicity.
+
+You should deploy LiteDesk behind Cloudflare Tunnels or Caddy.
+
+## Project Setup
+
+LiteDesk is a python3.12 Flask project that by default runs at ```http://127.0.0.1:5000```.
+
+```shell
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
+python app.py
+```
