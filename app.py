@@ -15,13 +15,13 @@ app.secret_key = 'supersecretkey'
 TICKETS_FILE = 'tickets.json'
 EMPLOYEE_FILE = 'employee.json'
 
-IMAP_SERVER = "imap.gmail.com"  # Replace with actual IMAP server
-EMAIL_ACCOUNT = ""
-EMAIL_PASSWORD = ""
-SMTP_SERVER = "smtp.gmail.com"
+IMAP_SERVER = "imap.gmail.com"  # Google Mail IMAP
+EMAIL_ACCOUNT = "" # Used as the FROM address
+EMAIL_PASSWORD = "" # Generate App Password - Be sure to rotate it bi-monthly.
+SMTP_SERVER = "smtp.gmail.com" # Google Mail SMTP
 SMTP_PORT = 587
 
-# Load tickets
+# Load Tickets
 def load_tickets():
     try:
         with open(TICKETS_FILE, 'r') as f:
@@ -32,8 +32,9 @@ def load_tickets():
 def save_tickets(tickets):
     with open(TICKETS_FILE, 'w') as f:
         json.dump(tickets, f, indent=4)
+        print("ticket-db has been updated.") # This should only be a log line. Once replies are handled properly it will likely be removed.
 
-# Load employees
+# Read the Employees Database
 def load_employees():
     try:
         with open(EMPLOYEE_FILE, 'r') as f:
@@ -44,14 +45,14 @@ def load_employees():
 # Generate new ticket number
 def generate_ticket_number():
     tickets = load_tickets()
-    return f"TKT-{str(len(tickets) + 1).zfill(4)}"
+    return f"TKT-{str(len(tickets) + 1).zfill(4)}" # TKT-2025-count  -- Plan to add year, but not yet.
 
 # Send confirmation email
 def send_email(to_email, subject, body):
     msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = EMAIL_ACCOUNT
-    msg['To'] = to_email
+    msg['Subject'] = subject # Subject provided by user input.
+    msg['From'] = EMAIL_ACCOUNT # Email Account referenced at the top.
+    msg['To'] = to_email # Email provided by user input.
     
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
@@ -65,8 +66,8 @@ def send_email(to_email, subject, body):
 def fetch_email_replies():
     try:
         mail = imaplib.IMAP4_SSL(IMAP_SERVER)
-        mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD)
-        mail.select("inbox")
+        mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD) # Standard Login
+        mail.select("inbox") # Select Inbox
 
         _status, messages = mail.search(None, 'ALL') # ALL, UNSEEN, NONE
         email_ids = messages[0].split()
@@ -85,6 +86,7 @@ def fetch_email_replies():
                     from_email = msg.get("From")
                     ticket_id = subject.split()[0]  # Extracts "TKT-XXXX"
 
+                    #body = "" This is not working as expected and I suspect this is writing nothing to the NOTES in the tickets-db
                     body = ""
                     if msg.is_multipart():
                         for part in msg.walk():
@@ -97,13 +99,13 @@ def fetch_email_replies():
 
                     # Find the corresponding ticket
                     for ticket in tickets:
-                        if ticket["ticket_number"] == ticket_id:
-                            ticket["notes"].append({"from": from_email, "message": body})
+                        if ticket["ticket_number"] == ticket_id: # ticket_number is from tickets-db and ticket_id is the email subject contains
+                            ticket["notes"].append({"message": body})
                             break
 
         # Save updated tickets
         save_tickets(tickets)
-        mail.logout()
+        mail.logout() # Graceful logout to prevent session spamming.
     except Exception as e:
         print(f"Error fetching emails: {e}")
 
@@ -111,7 +113,7 @@ def fetch_email_replies():
 def background_email_monitor():
     while True:
         fetch_email_replies()
-        time.sleep(120)  # Check emails every 2 minutes
+        time.sleep(120)  # Check emails every 2 minutes.
 
 threading.Thread(target=background_email_monitor, daemon=True).start()
 
