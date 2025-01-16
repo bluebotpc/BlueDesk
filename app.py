@@ -32,7 +32,7 @@ def load_tickets():
 def save_tickets(tickets):
     with open(TICKETS_FILE, 'w') as f:
         json.dump(tickets, f, indent=4)
-        print("ticket-db has been updated.") # This should only be a log line. Once replies are handled properly it will likely be removed.
+        print("INFO - ticket-db has been updated.") # This should only be a log line. Once replies are handled properly it will likely be removed.
 
 # Read the Employees Database
 def load_employees():
@@ -59,6 +59,7 @@ def send_email(to_email, subject, body):
             server.starttls()
             server.login(EMAIL_ACCOUNT, EMAIL_PASSWORD)
             server.sendmail(EMAIL_ACCOUNT, to_email, msg.as_string())
+            print("INFO - Confirmation email was successfully sent.")
     except Exception as e:
         print(f"Email sending failed: {e}")
 
