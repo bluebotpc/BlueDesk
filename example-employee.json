@@ -1,5 +1,7 @@
-{
-    "tech_username": "RyanGossling",
-    "tech_authcode": "Password123",
-    "tech_type": "Technician"
-}
+[
+    {
+        "tech_username": "RyanGossling",
+        "tech_authcode": "CanIHaveA1Please",
+        "tech_type": "Technician"
+    }
+]
