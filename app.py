@@ -5,6 +5,7 @@ import imaplib
 import email
 import threading
 import time
+import re
 from email.mime.text import MIMEText
 from email.header import decode_header
 from datetime import datetime
@@ -63,20 +64,51 @@ def send_email(to_email, subject, body):
     except Exception as e:
         print(f"Email sending failed: {e}")
 
-# Fetch email replies
+# extract_email_body is attempting to remove whitespace and ignore html in favor of plaintext. I think it is working.
+def extract_email_body(msg):
+    body = ""
+    
+    if msg.is_multipart():
+        for part in msg.walk():
+            content_type = part.get_content_type()
+            content_disposition = str(part.get("Content-Disposition"))
+
+            if "attachment" in content_disposition:
+                continue  # Skip attachments
+
+            if content_type == "text/plain":  # Prefer plaintext over HTML
+                try:
+                    body = part.get_payload(decode=True).decode(errors="ignore").strip()
+                except Exception as e:
+                    print(f"Error decoding email part: {e}")
+                    continue
+            elif content_type == "text/html" and not body:
+                try:
+                    body = part.get_payload(decode=True).decode(errors="ignore").strip()
+                except Exception as e:
+                    print(f"Error decoding HTML part: {e}")
+                    continue
+    else:
+        try:
+            body = msg.get_payload(decode=True).decode(errors="ignore").strip()
+        except Exception as e:
+            print(f"Error decoding single-part email: {e}")
+
+    return body
+
 def fetch_email_replies():
     try:
         mail = imaplib.IMAP4_SSL(IMAP_SERVER)
-        mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD) # Standard Login
-        mail.select("inbox") # Select Inbox
+        mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD) # Graceful email login.
+        mail.select("inbox") # Select the inbox for reading/monitoring.
 
-        _status, messages = mail.search(None, 'ALL') # ALL, UNSEEN, NONE
+        _, messages = mail.search(None, 'UNSEEN')
         email_ids = messages[0].split()
 
         tickets = load_tickets()
         
         for email_id in email_ids:
-            _status, msg_data = mail.fetch(email_id, '(RFC822)')
+            _, msg_data = mail.fetch(email_id, '(RFC822)')
             for response_part in msg_data:
                 if isinstance(response_part, tuple):
                     msg = email.message_from_bytes(response_part[1])
@@ -85,28 +117,24 @@ def fetch_email_replies():
                         subject = subject.decode(encoding or "utf-8")
                     
                     from_email = msg.get("From")
-                    ticket_id = subject.split()[0]  # Extracts "TKT-XXXX"
+                    ticket_match = re.search(r'RE:TKT-\d+', subject) # Searching for RE: assuming most replies will contain this. It works so far!
+                    ticket_id = ticket_match.group(0) if ticket_match else None
 
-                    #body = "" This is not working as expected and I suspect this is writing nothing to the NOTES in the tickets-db
-                    body = ""
-                    if msg.is_multipart():
-                        for part in msg.walk():
-                            content_type = part.get_content_type()
-                            if content_type in ["text/plain", "text/html"]:
-                                body = part.get_payload(decode=True).decode(errors="ignore")
-                                break
-                    else:
-                        body = msg.get_payload(decode=True).decode()
+                    if not ticket_id:
+                        continue  # Skip if no valid ticket ID is found
+
+                    body = extract_email_body(msg)
 
                     # Find the corresponding ticket
                     for ticket in tickets:
-                        if ticket["ticket_number"] == ticket_id: # ticket_number is from tickets-db and ticket_id is the email subject contains
+                        if ticket["ticket_number"] == ticket_id:
                             ticket["notes"].append({"message": body})
+                            save_tickets(tickets)  # Save changes to the ticket-db
+                            print(f"Updated ticket {ticket_id} with reply from {from_email}")
                             break
-
-        # Save updated tickets
-        save_tickets(tickets)
-        mail.logout() # Graceful logout to prevent session spamming.
+        #save_tickets(tickets) # Commenting this out to prevent constant writing to the json file.
+        mail.logout()
+        print("INFO - Email fetch job completed.")
     except Exception as e:
         print(f"Error fetching emails: {e}")
 

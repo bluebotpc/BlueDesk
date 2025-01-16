@@ -1,8 +1,13 @@
 # LiteDesk
 
-Peppermint.sh no longer appears to be maintained and was left in an unusable state. I would contribute but I have no desire to learn Typescript as a Network Engineer. Thus LiteDesk.
+Peppermint.sh no longer appears to be maintained and was left in an unusable state. I would contribute but I have no desire to learn Typescript as a Network Engineer. Thus LiteDesk. It is barebones and simple. No Databases. I don't like them. User Accounts and Tickets databases are json files for simplicity.
 
-It is barebones and simple. No Databases. I don't like them. User Accounts and Tickets databases are json files for simplicity.
+## How LiteDesk works
+
+Landing page is a basic Service Desk form.
+User provided _email_ and _subject_ are used to create an auto-email.
+The script will monitor the configured inbox every 2 minutes for replies.
+User replies are appended to the "notes" in tickets.json
 
 You should deploy LiteDesk behind Cloudflare Tunnels or Caddy.
 
@@ -16,3 +21,10 @@ venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
+
+### Goals and Roadmap
+
+- Fine tune email reply handling
+- Fine tune tickets.json key:value pairs
+- Create HTML/CSS for index, login, dashboard, submit-success, and 404.
+- Create Technician tkinter interface.
