@@ -1,7 +1,17 @@
 [
     {
+        "tech_username": "LiteDesk-svc",
+        "tech_authcode": "nousehere123",
+        "tech_type": "Admin"
+    },
+    {
         "tech_username": "RyanGossling",
-        "tech_authcode": "CanIHaveA1Please",
+        "tech_authcode": "MoreLikeAGoose1",
         "tech_type": "Technician"
+    },
+    {
+        "tech_username": "guest",
+        "tech_authcode": "security4me",
+        "tech_type": "DISABLED"
     }
 ]
