@@ -1,0 +1,5 @@
+IMAP_SERVER=imap.example.com
+EMAIL_ACCOUNT=your_from_email@example.com
+EMAIL_PASSWORD=NewAPPpassword_placeholder123
+SMTP_SERVER=smtp.example.com
+SMTP_PORT=587

@@ -6,6 +6,8 @@ import email
 import threading
 import time
 import re
+import os
+from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.header import decode_header
 from datetime import datetime
@@ -16,11 +18,14 @@ app.secret_key = 'supersecretkey'
 TICKETS_FILE = 'tickets.json'
 EMPLOYEE_FILE = 'employee.json'
 
-IMAP_SERVER = "imap.gmail.com"  # Google Mail IMAP
-EMAIL_ACCOUNT = "" # Used as the FROM address
-EMAIL_PASSWORD = "" # Generate App Password - Be sure to rotate it bi-monthly.
-SMTP_SERVER = "smtp.gmail.com" # Google Mail SMTP
-SMTP_PORT = 587
+# Load environment variables from .env
+load_dotenv(dotenv_path=".env")
+
+IMAP_SERVER = os.getenv("IMAP_SERVER")
+EMAIL_ACCOUNT = os.getenv("EMAIL_ACCOUNT")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")
+SMTP_SERVER = os.getenv("SMTP_SERVER")
+SMTP_PORT = os.getenv("SMTP_PORT")
 
 # Load Tickets
 def load_tickets():
