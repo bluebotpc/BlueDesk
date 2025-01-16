@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h2>Technician Dashboard</h2>
+    <a href="{{ url_for('logout') }}">Logout</a>
+    <ul>
+        {% for ticket in tickets %}
+            <li>
+                <a href="{{ url_for('ticket_detail', ticket_number=ticket.ticket_number) }}">
+                    {{ ticket.ticket_number }} - {{ ticket.subject }} ({{ ticket.status }})
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

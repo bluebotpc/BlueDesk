@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit a Ticket</title>
+</head>
+<body>
+    <h2>Submit a Ticket</h2>
+    <form method="post">
+        Name: <input type="text" name="name" required><br>
+        Email: <input type="email" name="email" required><br>
+        Subject: <input type="text" name="subject" required><br>
+        Message: <textarea name="message" required></textarea><br>
+        Request Type:
+        <select name="type">
+            <option value="Access">Access</option>
+            <option value="Request">Request</option>
+            <option value="Incident">Incident</option>
+            <option value="Maintenance">Maintenance</option>
+            <option value="Change">Change</option>
+        </select><br>
+        <input type="submit" value="Submit Ticket">
+    </form>
+</body>
+</html>

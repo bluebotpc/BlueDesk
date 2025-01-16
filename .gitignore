@@ -1,3 +1,7 @@
+# MY IGNORED FILES
+employee.json
+tickets.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

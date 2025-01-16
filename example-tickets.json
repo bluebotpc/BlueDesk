@@ -1,0 +1,13 @@
+[
+    {
+        "ticket_number": "TKT-0001",
+        "name": "John",
+        "email": "johndoe@example.com",
+        "subject": "Flask Test",
+        "message": "Can you tell me if this works?",
+        "request_type": "Request",
+        "status": "Open",
+        "submission_date": "2025-01-16 10:00:30",
+        "notes": []
+    }
+]
