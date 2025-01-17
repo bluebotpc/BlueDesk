@@ -34,3 +34,5 @@ python app.py
 - Create HTML/CSS for index, login, dashboard, submit-success, and 404.
 - Create seperate list for closed tickets.
 - Create Technician tkinter interface.
+
+**Current Version:** Major.Minor.Bugfix - 0.1.0

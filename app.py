@@ -123,11 +123,12 @@ def fetch_email_replies():
                         subject = subject.decode(encoding or "utf-8")
                     
                     from_email = msg.get("From")
-                    match_ticket_reply = re.search(r'RE:\s*(TKT-\d{4}-\d+)', subject)
-                    ticket_id = match_ticket_reply.group(1) if match_ticket_reply else None  # Extracts only the ticket ID
+                    match_ticket_reply = re.search(r'(?i)\bTKT-\d{4}-\d+\b', subject)  # Match "TKT-YYYY-XXXX" with no case sensitivity and should accept RE: re: and whitespace.
+                    ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None # Cleans up the extracted ticket number so it doesn't include "RE:".
+                    print(f"DEBUG: Extracted ticket ID: {ticket_id} from subject: {subject}")
+
 
                     if not ticket_id:
-                        print("ERROR - No related ticket was found.")
                         continue  # Skip if no valid ticket ID is found
 
                     body = extract_email_body(msg)
@@ -139,19 +140,7 @@ def fetch_email_replies():
                             save_tickets(tickets)  # Save changes to the ticket-db
                             print(f"INFO - Updated ticket {ticket_id} with reply from {from_email}")
                             break
-                    for ticket in tickets:
-                        stored_ticket_id = ticket["ticket_number"].strip()  # Remove any accidental spaces
-                        if stored_ticket_id == ticket_id:
-                            print(f"DEBUG: Match found for {ticket_id}, appending note.")  # Debugging line
-
-                            ticket["notes"].append({"message": body})
-                            save_tickets(tickets)  # Save changes immediately
-
-                            print(f"INFO - Updated ticket {ticket_id} with reply from {from_email}")
-                            break  # Stop once a match is found
-                        else:
-                            print(f"DEBUG: No match - Extracted: '{ticket_id}' vs Stored: '{stored_ticket_id}'")
-
+                        
         #save_tickets(tickets) # Commenting this out to prevent constant writing to the json file.
         mail.logout()
         print("INFO - Email fetch job completed.")
