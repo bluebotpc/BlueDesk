@@ -4,16 +4,24 @@ Peppermint.sh no longer appears to be maintained and was left in an unusable sta
 
 ## How GoobyDesk works
 
-Landing page is a basic Service Desk form.
-User provided _email_ and _subject_ are used to create an auto-email.
-The script will monitor the configured inbox every 2 minutes for replies.
-User replies are appended to the "notes" in tickets.json
+- GoobyDesk is a python3.12 Flask project that by default runs at ```http://127.0.0.1:5000```.
+- Landing page is a basic Service Desk form.
+- User provided _email_ and _subject_ are used to create an auto-email.
+- The script will monitor the configured inbox every 2 minutes for replies.
+- User replies are appended to the "notes" in tickets.json
 
-You should deploy LiteDesk behind Cloudflare Tunnels or Caddy.
+## Linux Project Setup
 
-## Project Setup
+```shell
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python3 ./app.py
+```
 
-GoobyDesk is a python3.12 Flask project that by default runs at ```http://127.0.0.1:5000```.
+CTRL+C to break. ```deactivate``` to clean up.
+
+## Windows Project Setup
 
 ```shell
 python -m venv venv
@@ -21,6 +29,8 @@ venv\Scripts\activate
 pip install -r requirements.txt
 python app.py
 ```
+
+CTRL+C to break. ```deactivate``` to clean up.
 
 ### Goals and Roadmap
 
@@ -34,5 +44,6 @@ python app.py
 - Create HTML/CSS for index, login, dashboard, submit-success, and 404.
 - Create seperate list for closed tickets.
 - Create Technician tkinter interface.
+- Create Production deployment script.
 
 **Current Version:** Major.Minor.Bugfix - 0.1.0
