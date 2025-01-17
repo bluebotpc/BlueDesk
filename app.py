@@ -108,7 +108,7 @@ def fetch_email_replies():
         mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD) # Graceful email login.
         mail.select("inbox") # Select the inbox for reading/monitoring.
 
-        _, messages = mail.search(None, 'UNSEEN')
+        _, messages = mail.search(None, 'UNSEEN') # UNSEEN or ALL
         email_ids = messages[0].split()
 
         tickets = load_tickets()
@@ -165,8 +165,8 @@ def home():
         
         new_ticket = {
             "ticket_number": ticket_number,
-            "name": name,
-            "email": email,
+            "requestor_name": name,
+            "requestor_email": email,
             "subject": subject,
             "message": message,
             "request_type": request_type,

@@ -1,24 +1,121 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GoobyDesk - Submit a Ticket</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 
+                'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .logo img {
+            width: 200px;
+            height: 60px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #284389;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        label {
+            font-size: 16px;
+            font-weight: 600;
+            display: block;
+            margin-top: 10px;
+            text-align: left;
+            color: #000;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .submit-btn {
+            background-color: #284389;
+            color: #fff;
+            font-size: 16px;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .submit-btn:hover {
+            background-color: #1f356b;
+        }
+
+        .footer-text {
+            font-size: 12px;
+            color: #b7b7b7;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Submit a Ticket</h2>
-    <form method="post">
-        Name: <input type="text" name="name" required><br>
-        Email: <input type="email" name="email" required><br>
-        Subject: <input type="text" name="subject" required><br>
-        Message: <textarea name="message" required></textarea><br><br>
-        Request Type:
-        <select name="type">
-            <option value="Access">Access</option>
-            <option value="Request">Request</option>
-            <option value="Incident">Incident</option>
-            <option value="Maintenance">Maintenance</option>
-            <option value="Change">Change</option>
-        </select><br>
-        <input type="submit" value="Submit Ticket">
-    </form>
+    <div class="container">
+        <div class="logo">
+            <img src="https://mattfaulkner.us-southeast-1.linodeobjects.com/logo_color.png" alt="BlueBotPC Logo">
+        </div>
+        <h2>Submit a Ticket</h2>
+        <form method="post">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="subject">Subject:</label>
+            <input type="text" id="subject" name="subject" required>
+
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" required></textarea>
+
+            <label for="type">Request Type:</label>
+            <select id="type" name="type">
+                <option value="Access">Access</option>
+                <option value="Request">Request</option>
+                <option value="Incident">Incident</option>
+                <option value="Maintenance">Maintenance</option>
+                <option value="Change">Change</option>
+            </select>
+
+            <button type="submit" class="submit-btn">Submit Ticket</button>
+        </form>
+        <p class="footer-text">©2025 GoobyDesk, a BlueBotPC platform. All rights reserved.</p>
+    </div>
 </body>
 </html>
