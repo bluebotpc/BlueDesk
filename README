@@ -13,7 +13,7 @@ You should deploy LiteDesk behind Cloudflare Tunnels or Caddy.
 
 ## Project Setup
 
-LiteDesk is a python3.12 Flask project that by default runs at ```http://127.0.0.1:5000```.
+GoobyDesk is a python3.12 Flask project that by default runs at ```http://127.0.0.1:5000```.
 
 ```shell
 python -m venv venv
@@ -24,7 +24,13 @@ python app.py
 
 ### Goals and Roadmap
 
-- Fine tune email reply handling
-- Fine tune tickets.json key:value pairs
+- OAuth2.0 Support for Email Authentication.
+- Fine tune email reply handling.
+- Fine tune tickets.json
+- HTML Form validation.
+- File locking and retry support.
+- Mutli-user support
+- Appead year to ticket-id
 - Create HTML/CSS for index, login, dashboard, submit-success, and 404.
+- Create seperate list for closed tickets.
 - Create Technician tkinter interface.

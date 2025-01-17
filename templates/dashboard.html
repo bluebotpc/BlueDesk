@@ -98,7 +98,6 @@
             <img src="https://mattfaulkner.us-southeast-1.linodeobjects.com/logo_color.png" alt="BlueBotPC Logo">
         </div>
         <h2>GoobyDesk Technician Dashboard</h2>
-        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
         <ul class="ticket-list">
             {% for ticket in tickets %}
                 <li>
@@ -108,6 +107,7 @@
                 </li>
             {% endfor %}
         </ul>
+        <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
         <p class="footer-text">©2025 GoobyDesk, a BlueBotPC platform. All rights reserved.</p>
     </div>
 </body>
