@@ -2,6 +2,8 @@
 
 Peppermint.sh no longer appears to be maintained and was left in an unusable state. I would contribute but I have no desire to learn Typescript as a Network Engineer. Thus GoobyDesk. It is barebones and simple. No Databases. I don't like them. User Accounts and Tickets databases are json files for simplicity.
 
+**Current Version:** Major.Minor.Patch - 0.1.1
+
 ## How GoobyDesk works
 
 - GoobyDesk is a python3.12 Flask project that by default runs at ```http://127.0.0.1:5000```.
@@ -40,10 +42,6 @@ CTRL+C to break. ```deactivate``` to clean up.
 - HTML Form validation.
 - File locking and retry support.
 - Mutli-user support
-- Appead year to ticket-id
-- Create HTML/CSS for index, login, dashboard, submit-success, and 404.
 - Create seperate list for closed tickets.
 - Create Technician tkinter interface.
 - Create Production deployment script.
-
-**Current Version:** Major.Minor.Bugfix - 0.1.0
