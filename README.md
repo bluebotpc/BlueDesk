@@ -2,7 +2,7 @@
 
 Peppermint.sh no longer appears to be maintained and was left in an unusable state. I would contribute but I have no desire to learn Typescript as a Network Engineer. Thus GoobyDesk. It is barebones and simple. No Databases. I don't like them. User Accounts and Tickets databases are json files for simplicity.
 
-**Current Version:** Major.Minor.Patch - 0.1.1
+**Current Version:** Major.Minor.Patch - 0.1.2
 
 ## How GoobyDesk works
 
