@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-import json # My preffered method of 'database' replacements.
+import json # My preffered method of "database" replacements.
 import smtplib # Outgoing Email
 import imaplib # Incoming Email
 import email # Email
@@ -14,7 +14,7 @@ from email.header import decode_header
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'
+app.secret_key = "supersecretkey"
 
 # Load environment variables from .env
 load_dotenv(dotenv_path=".env")
@@ -29,19 +29,19 @@ SMTP_PORT = os.getenv("SMTP_PORT")
 # Read Tickets
 def load_tickets():
     try:
-        with open(TICKETS_FILE, 'r') as f:
+        with open(TICKETS_FILE, "r") as f:
             return json.load(f)
     except FileNotFoundError:
         return []
 
 def save_tickets(tickets):
-    with open(TICKETS_FILE, 'w') as f:
+    with open(TICKETS_FILE, "w") as f:
         json.dump(tickets, f, indent=4)
 
 # Read the Employees Database
 def load_employees():
     try:
-        with open(EMPLOYEE_FILE, 'r') as f:
+        with open(EMPLOYEE_FILE, "r") as f:
             return json.load(f)
     except FileNotFoundError:
         return {}
@@ -56,9 +56,9 @@ def generate_ticket_number():
 # Send confirmation email
 def send_email(to_email, subject, body):
     msg = MIMEText(body)
-    msg['Subject'] = subject # Subject provided by user input.
-    msg['From'] = EMAIL_ACCOUNT # Email Account referenced at the top.
-    msg['To'] = to_email # Email provided by user input.
+    msg["Subject"] = subject # Subject provided by user input.
+    msg["From"] = EMAIL_ACCOUNT # Email Account referenced at the top.
+    msg["To"] = to_email # Email provided by user input.
     
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
@@ -69,7 +69,7 @@ def send_email(to_email, subject, body):
     except Exception as e:
         print(f"ERROR - Email sending failed: {e}")
 
-# extract_email_body is attempting to scrape the content of the 'valid' TKT email replies. It skips attachments. I do not currently need this feature. 
+# extract_email_body is attempting to scrape the content of the "valid" TKT email replies. It skips attachments. I do not currently need this feature. 
 def extract_email_body(msg):
     body = ""
     
@@ -108,13 +108,13 @@ def fetch_email_replies():
         mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD) # Graceful Email system login.
         mail.select("inbox") # Select the inbox for reading/monitoring.
 
-        _, messages = mail.search(None, 'UNSEEN') # UNSEEN or ALL -- Only reading UNSEEN currently.
+        _, messages = mail.search(None, "UNSEEN") # UNSEEN or ALL -- Only reading UNSEEN currently.
         email_ids = messages[0].split()
 
         tickets = load_tickets() # Read the tickets file into memory.
         
         for email_id in email_ids:
-            _, msg_data = mail.fetch(email_id, '(RFC822)')
+            _, msg_data = mail.fetch(email_id, "(RFC822)")
             for response_part in msg_data:
                 if isinstance(response_part, tuple):
                     msg = email.message_from_bytes(response_part[1])
@@ -123,8 +123,8 @@ def fetch_email_replies():
                         subject = subject.decode(encoding or "utf-8")
                     
                     from_email = msg.get("From")
-                    match_ticket_reply = re.search(r'(?i)\bTKT-\d{4}-\d+\b', subject)  # Match "TKT-YYYY-XXXX" with no case sensitivity and should accept RE: re: and whitespace.
-                    ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None # Cleans up the extracted ticket number so it doesn't include "RE:".
+                    match_ticket_reply = re.search(r"(?i)\bTKT-\d{4}-\d+\b", subject)  # Match "TKT-YYYY-XXXX" with no case sensitivity and should accept RE: re: and whitespace.
+                    ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None # Cleans up the extracted ticket number so it doesn"t include "RE:".
                     print(f"DEBUG: Extracted ticket ID: {ticket_id} from subject: {subject}")
 
 
@@ -156,14 +156,14 @@ def background_email_monitor():
 threading.Thread(target=background_email_monitor, daemon=True).start()
 
 # Routes
-@app.route('/', methods=['GET', 'POST'])
+@app.route("/", methods=["GET", "POST"])
 def home():
-    if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-        subject = request.form['subject']
-        message = request.form['message']
-        request_type = request.form['type']
+    if request.method == "POST":
+        name = request.form["name"]
+        email = request.form["email"]
+        subject = request.form["subject"]
+        message = request.form["message"]
+        request_type = request.form["type"]
         ticket_number = generate_ticket_number()
         
         new_ticket = {
@@ -174,7 +174,7 @@ def home():
             "message": message,
             "request_type": request_type,
             "status": "Open",
-            "submission_date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "submission_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "notes": []
         }
         
@@ -185,43 +185,45 @@ def home():
         # Craft the initial email format. This will be updated to 
         send_email(email, f"{ticket_number} - {subject}", f"Thank you for your request. Your new Ticket ID is {ticket_number}. You have provided the following details... {message}")
         
-        return redirect(url_for('home'))
+        return redirect(url_for("home"))
     
-    return render_template('index.html')
+    return render_template("index.html")
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
         employees = load_employees()
         
+        # If successful login, send to the dashboard.
         if username == employees.get("tech_username") and password == employees.get("tech_authcode"):
-            session['technician'] = True
-            return redirect(url_for('dashboard'))
+            session["technician"] = True
+            return redirect(url_for("dashboard"))
         
-    return render_template('login.html')
+    return render_template("login.html")
 
-@app.route('/dashboard')
+@app.route("/dashboard")
 def dashboard():
-    if not session.get('technician'):
-        return redirect(url_for('login'))
+    if not session.get("technician"):
+        return redirect(url_for("login"))
     
     tickets = load_tickets()
-    return render_template('dashboard.html', tickets=tickets)
+    return render_template("dashboard.html", tickets=tickets)
 
-@app.route('/ticket/<ticket_number>')
+@app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
     tickets = load_tickets()
-    ticket = next((t for t in tickets if t['ticket_number'] == ticket_number), None)
+    ticket = next((t for t in tickets if t["ticket_number"] == ticket_number), None)
     if ticket:
         return jsonify(ticket)
     return "Ticket not found", 404
 
-@app.route('/logout')
+# Removes the session cookie from the user browser, sending back to the login page.
+@app.route("/logout")
 def logout():
-    session.pop('technician', None)
-    return redirect(url_for('login'))
+    session.pop("technician", None)
+    return redirect(url_for("login"))
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
