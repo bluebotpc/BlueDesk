@@ -8,13 +8,16 @@ import threading # Monitor Email for Replies in the background
 import time
 import re # Regex Support for Email Replies
 import os # Dotenv requirement.
+import secrets # Securing Cookies/Session data on the client.
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.header import decode_header
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"
+#app.secret_key = "supersecretkey"
+app.secret_key = secrets.token_hex(32)  # Generates a 64-character hex string. This value will reset each time the app restarts.
+#app.secret_key = os.getenv("SECRET_KEY", secrets.token_hex(32))  # Fallback to a random key if missing. Required .env implementation.
 
 # Load environment variables from .env
 load_dotenv(dotenv_path=".env")
@@ -125,7 +128,7 @@ def fetch_email_replies():
                     from_email = msg.get("From")
                     match_ticket_reply = re.search(r"(?i)\bTKT-\d{4}-\d+\b", subject)  # Match "TKT-YYYY-XXXX" with no case sensitivity and should accept RE: re: and whitespace.
                     ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None # Cleans up the extracted ticket number so it doesn"t include "RE:".
-                    print(f"DEBUG: Extracted ticket ID: {ticket_id} from subject: {subject}")
+                    print(f"DEBUG - Extracted ticket ID: {ticket_id} from subject: {subject}")
 
 
                     if not ticket_id:
@@ -209,7 +212,9 @@ def dashboard():
         return redirect(url_for("login"))
     
     tickets = load_tickets()
-    return render_template("dashboard.html", tickets=tickets)
+    # Filtering out tickets with the Closed Status.
+    open_tickets = [ticket for ticket in tickets if ticket["status"].lower() != "closed"]
+    return render_template("dashboard.html", tickets=open_tickets)
 
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
