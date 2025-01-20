@@ -16,17 +16,16 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "secretdemokey"
-#app.secret_key = secrets.token_hex(32)  # Generates a 64-character hex string. This value will reset each time the app restarts.
 
 # Load environment variables from .env
 load_dotenv(dotenv_path=".env")
-TICKETS_FILE = os.getenv("TICKETS_FILE") # Adding to .env for increased flexibility on ticketing.
-EMPLOYEE_FILE = os.getenv("EMPLOYEE_FILE") # Adding to .env for increased flexibility on employee login options.
-IMAP_SERVER = os.getenv("IMAP_SERVER")
-EMAIL_ACCOUNT = os.getenv("EMAIL_ACCOUNT") # SEND FROM Email Address
+TICKETS_FILE = os.getenv("TICKETS_FILE")
+EMPLOYEE_FILE = os.getenv("EMPLOYEE_FILE")
+IMAP_SERVER = os.getenv("IMAP_SERVER") # Provider IMAP Server Address
+EMAIL_ACCOUNT = os.getenv("EMAIL_ACCOUNT") # SEND FROM Email Address/Username
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password - No OAuth or OAuth2 support yet.
-SMTP_SERVER = os.getenv("SMTP_SERVER")
-SMTP_PORT = os.getenv("SMTP_PORT")
+SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
+SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
 
 # Read Tickets
 def load_tickets():
@@ -144,7 +143,7 @@ def fetch_email_replies():
                             break
                         
         #save_tickets(tickets) # Commenting this out to prevent constant writing to the tickets.json file.
-        mail.logout()
+        mail.logout() # Graceful logout.
         #print("INFO - Email fetch job completed.")
     except Exception as e:
         print(f"Error fetching emails: {e}")
@@ -153,7 +152,7 @@ def fetch_email_replies():
 def background_email_monitor():
     while True:
         fetch_email_replies()
-        time.sleep(120)  # Wait for  emails every 2 minutes.
+        time.sleep(300)  # Wait for  emails every 5 minutes.
 
 threading.Thread(target=background_email_monitor, daemon=True).start()
 
