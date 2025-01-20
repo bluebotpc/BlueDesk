@@ -132,7 +132,7 @@ def fetch_email_replies():
 
 
                     if not ticket_id:
-                        continue  # Skip if no valid ticket ID is found
+                        continue  # Skip if no valid ticket-id is found
 
                     body = extract_email_body(msg)
 
@@ -144,7 +144,7 @@ def fetch_email_replies():
                             print(f"INFO - Updated ticket {ticket_id} with reply from {from_email}")
                             break
                         
-        #save_tickets(tickets) # Commenting this out to prevent constant writing to the json file.
+        #save_tickets(tickets) # Commenting this out to prevent constant writing to the tickets.json file.
         mail.logout()
         print("INFO - Email fetch job completed.")
     except Exception as e:
@@ -158,7 +158,8 @@ def background_email_monitor():
 
 threading.Thread(target=background_email_monitor, daemon=True).start()
 
-# Routes
+# BELOW THIS LINE IS RESERVED FOR FLASK APP ROUTES
+# This is the "default" route for the home/index/landing page. This is where users submit a ticket.
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
@@ -181,17 +182,18 @@ def home():
             "notes": []
         }
         
-        tickets = load_tickets()
+        tickets = load_tickets() # Load the ticket-db into memory via a read operation.
         tickets.append(new_ticket)
-        save_tickets(tickets)
+        save_tickets(tickets) # Writes the new ticket into the tickets.json file.
         
-        # Craft the initial email format. This will be updated to 
+        # Craft the initial email format. This will eventually be updated to support HTML email signatures.
         send_email(email, f"{ticket_number} - {subject}", f"Thank you for your request. Your new Ticket ID is {ticket_number}. You have provided the following details... {message}")
         
         return redirect(url_for("home"))
     
     return render_template("index.html")
 
+# 
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -208,41 +210,42 @@ def login():
 
 @app.route("/dashboard")
 def dashboard():
-    if not session.get("technician"):
-        return redirect(url_for("login"))
+    if not session.get("technician"): # If the local machine does not have a session token/cookie containing the 'technician' tag.
+        # Placeholder line - I may add some sort of print statement for debug logging. Future standard logging should eventually be implemented.
+        return redirect(url_for("login")) # Redirect them to the login page.
     
-    tickets = load_tickets()
+    tickets = load_tickets() # Load the ticket-db into memory via a read operation.
     # Filtering out tickets with the Closed Status.
     open_tickets = [ticket for ticket in tickets if ticket["status"].lower() != "closed"]
     return render_template("dashboard.html", tickets=open_tickets)
 
+# Opens a ticket in raw json. This should be tweaked eventually.
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
-    tickets = load_tickets()
+    tickets = load_tickets() 
     ticket = next((t for t in tickets if t["ticket_number"] == ticket_number), None)
     if ticket:
         return jsonify(ticket)
-    return "Ticket not found", 404
+    return "Ticket Number in the URL was not found", 404
 
-# Removes the session cookie from the user browser, sending back to the login page.
+# Removes the session cookie from the user browser, sending the Technician/user back to the login page.
 @app.route("/logout")
 def logout():
     session.pop("technician", None)
-    return redirect(url_for("login"))
+    return redirect(url_for("login")) # Send a logged out user back to the login page. This can be customized.
 
-# Routine to close a ticket.
+# Routine to close a ticket. This invloves a write operation to the tickets.json file.
 @app.route("/close_ticket/<ticket_number>", methods=["POST"])
 def close_ticket(ticket_number):
-    if not session.get("technician"):  # Ensure only logged-in techs can close tickets
+    if not session.get("technician"):  # Ensure only logged-in techs can close tickets.
         return jsonify({"message": "Unauthorized"}), 403
-
-    tickets = load_tickets()
+    tickets = load_tickets() # Loads tickets.json into memory.
     for ticket in tickets:
-        if ticket["ticket_number"] == ticket_number:
+        if ticket["ticket_number"] == ticket_number: # Basic input validation.
             ticket["status"] = "Closed"
-            save_tickets(tickets)
-            return jsonify({"message": f"Ticket {ticket_number} has been closed."})
-
+            save_tickets(tickets) # Writes to the tickets.json file.
+            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # This appears to be a pop-up. I'm not sure I am happy with this.
+        # If the ticket was not found....
     return jsonify({"message": "Ticket not found"}), 404
 
 if __name__ == "__main__":

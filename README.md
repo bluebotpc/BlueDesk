@@ -2,7 +2,7 @@
 
 Peppermint.sh no longer appears to be maintained and was left in an unusable state. I would contribute but I have no desire to learn Typescript as a Network Engineer. Thus GoobyDesk. It is barebones and simple. No Databases. I don't like them. User Accounts and Tickets databases are json files for simplicity.
 
-**Current Version:** Major.Minor.Patch - 0.1.2
+**Current Version:** Major.Minor.Patch - 0.1.5
 
 ## How GoobyDesk works
 
@@ -36,9 +36,9 @@ CTRL+C to break. ```deactivate``` to clean up.
 
 ### Goals and Roadmap
 
-- Implement ability to close tickets from the dashboard.
 - OAuth2.0 Support for Email Authentication.
 - Fine tune email reply handling.
 - HTML Form validation.
 - File locking and retry support.
-- Mutli-user support
+- Mutli-user (Technician) support
+- Standardized logging

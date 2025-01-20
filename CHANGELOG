@@ -1,5 +1,7 @@
 # CHANGELOG
 
-**Jan.20.2025:** Basic implementation for closing tickets.
+**Jan.20.2025-2:** Morning patch - Close Ticket button design matches my standards. Code has been further commented.
+
+**Jan.20.2025-1:** Basic implementation for closing tickets. Not production ready. Bedtime.
 
 **Jan.18.2025:** Secure cookie encoding. Add gunicorn to dependancies.
