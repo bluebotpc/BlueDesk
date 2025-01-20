@@ -15,8 +15,8 @@ from email.header import decode_header
 from datetime import datetime
 
 app = Flask(__name__)
-#app.secret_key = "supersecretkey"
-app.secret_key = secrets.token_hex(32)  # Generates a 64-character hex string. This value will reset each time the app restarts.
+app.secret_key = "supersecretkey"
+#app.secret_key = secrets.token_hex(32)  # Generates a 64-character hex string. This value will reset each time the app restarts.
 #app.secret_key = os.getenv("SECRET_KEY", secrets.token_hex(32))  # Fallback to a random key if missing. Required .env implementation.
 
 # Load environment variables from .env
@@ -229,6 +229,21 @@ def ticket_detail(ticket_number):
 def logout():
     session.pop("technician", None)
     return redirect(url_for("login"))
+
+# Routine to close a ticket.
+@app.route("/close_ticket/<ticket_number>", methods=["POST"])
+def close_ticket(ticket_number):
+    if not session.get("technician"):  # Ensure only logged-in techs can close tickets
+        return jsonify({"message": "Unauthorized"}), 403
+
+    tickets = load_tickets()
+    for ticket in tickets:
+        if ticket["ticket_number"] == ticket_number:
+            ticket["status"] = "Closed"
+            save_tickets(tickets)
+            return jsonify({"message": f"Ticket {ticket_number} has been closed."})
+
+    return jsonify({"message": "Ticket not found"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)

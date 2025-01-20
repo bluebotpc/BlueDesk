@@ -36,12 +36,9 @@ CTRL+C to break. ```deactivate``` to clean up.
 
 ### Goals and Roadmap
 
+- Implement ability to close tickets from the dashboard.
 - OAuth2.0 Support for Email Authentication.
 - Fine tune email reply handling.
-- Fine tune tickets.json
 - HTML Form validation.
 - File locking and retry support.
 - Mutli-user support
-- Create seperate list for closed tickets.
-- Create Technician tkinter interface.
-- Create Production deployment script.

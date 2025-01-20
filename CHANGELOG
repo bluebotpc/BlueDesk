@@ -1,3 +1,5 @@
 # CHANGELOG
 
+**Jan.20.2025:** Basic implementation for closing tickets.
+
 **Jan.18.2025:** Secure cookie encoding. Add gunicorn to dependancies.
