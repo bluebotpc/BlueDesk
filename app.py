@@ -7,15 +7,16 @@ import email # Email
 import threading # Monitor Email for Replies in the background
 import time
 import re # Regex Support for Email Replies
-import os # Dotenv requirement.
-import secrets # Securing Cookies/Session data on the client.
+import os # Dotenv requirement
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
 from email.header import decode_header
 from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "secretdemokey"
+# I attempted to leverage the dotenv file but had trouble.
 
 # Load environment variables from .env
 load_dotenv(dotenv_path=".env")
@@ -33,7 +34,7 @@ def load_tickets():
         with open(TICKETS_FILE, "r") as f:
             return json.load(f)
     except FileNotFoundError:
-        return []
+        return [] # represents an empty list.
 
 # Writes to the ticket file database.
 def save_tickets(tickets):
@@ -46,28 +47,33 @@ def load_employees():
         with open(EMPLOYEE_FILE, "r") as f:
             return json.load(f)
     except FileNotFoundError:
-        return {}
+        return {} # represents an empty dictionary.
 
 # Generate a new ticket number
 def generate_ticket_number():
-    tickets = load_tickets()
+    tickets = load_tickets() # Read/Load the tickets-db into memory.
     current_year = datetime.now().year  # Get the current year dynamically
     ticket_count = str(len(tickets) + 1).zfill(4)  # Zero-padded ticket count
     return f"TKT-{current_year}-{ticket_count}"  # Format: TKT-YYYY-XXXX
 
 # Send a confirmation email
-def send_email(to_email, subject, body):
-    msg = MIMEText(body)
-    msg["Subject"] = subject # Subject provided by user input.
-    msg["From"] = EMAIL_ACCOUNT # Email Account referenced at the top.
-    msg["To"] = to_email # Email provided by user input.
+def send_email(to_email, subject, body, html=False):
+    msg = MIMEMultipart()
+    msg["Subject"] = subject
+    msg["From"] = EMAIL_ACCOUNT
+    msg["To"] = to_email
+    
+    # Attach body as plain text and/or HTML
+    if html:
+        msg.attach(MIMEText(body, "html"))
+    else:
+        msg.attach(MIMEText(body, "plain"))
     
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(EMAIL_ACCOUNT, EMAIL_PASSWORD)
             server.sendmail(EMAIL_ACCOUNT, to_email, msg.as_string())
-            #print("INFO - Confirmation email was successfully sent.")
     except Exception as e:
         print(f"ERROR - Email sending failed: {e}")
 
@@ -129,7 +135,6 @@ def fetch_email_replies():
                     ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None # Cleans up the extracted ticket number so it doesn"t include "RE:".
                     #print(f"DEBUG - Extracted ticket ID: {ticket_id} from subject: {subject}")
 
-
                     if not ticket_id:
                         continue  # Skip if no valid ticket-id is found
 
@@ -181,12 +186,15 @@ def home():
             "notes": []
         }
         
-        tickets = load_tickets() # Load the ticket-db into memory via a read operation.
+        tickets = load_tickets()
         tickets.append(new_ticket)
-        save_tickets(tickets) # Writes the new ticket into the tickets.json file.
+        save_tickets(tickets)
         
-        # Craft the initial email format. This will eventually be updated to support HTML email signatures.
-        send_email(email, f"{ticket_number} - {subject}", f"Thank you for your request. Your new Ticket ID is {ticket_number}. You have provided the following details... {message}")
+        # Render the HTML email template
+        email_body = render_template("/new-ticket-email.html", ticket=new_ticket)
+
+        # Send the email with HTML format
+        send_email(email, f"{ticket_number} - {subject}", email_body, html=True)
         
         return redirect(url_for("home"))
     
@@ -248,4 +256,4 @@ def close_ticket(ticket_number):
     return jsonify({"message": "Ticket not found"}), 404
 
 if __name__ == "__main__":
-    app.run() #debug=True
+    app.run(debug=True) #debug=True
