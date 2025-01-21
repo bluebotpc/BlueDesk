@@ -15,21 +15,19 @@ from email.header import decode_header
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "supersecretkey"
-#app.secret_key = secrets.token_hex(32)  # Generates a 64-character hex string. This value will reset each time the app restarts.
-#app.secret_key = os.getenv("SECRET_KEY", secrets.token_hex(32))  # Fallback to a random key if missing. Required .env implementation.
+app.secret_key = "secretdemokey"
 
 # Load environment variables from .env
 load_dotenv(dotenv_path=".env")
-TICKETS_FILE = os.getenv("TICKETS_FILE") # Adding to .env for increased flexibility on ticketing.
-EMPLOYEE_FILE = os.getenv("EMPLOYEE_FILE") # Adding to .env for increased flexibility on employee login options.
-IMAP_SERVER = os.getenv("IMAP_SERVER")
-EMAIL_ACCOUNT = os.getenv("EMAIL_ACCOUNT") # SEND FROM Email Address
+TICKETS_FILE = os.getenv("TICKETS_FILE")
+EMPLOYEE_FILE = os.getenv("EMPLOYEE_FILE")
+IMAP_SERVER = os.getenv("IMAP_SERVER") # Provider IMAP Server Address
+EMAIL_ACCOUNT = os.getenv("EMAIL_ACCOUNT") # SEND FROM Email Address/Username
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password - No OAuth or OAuth2 support yet.
-SMTP_SERVER = os.getenv("SMTP_SERVER")
-SMTP_PORT = os.getenv("SMTP_PORT")
+SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
+SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
 
-# Read Tickets
+# Read/Loads the ticket file into memory.
 def load_tickets():
     try:
         with open(TICKETS_FILE, "r") as f:
@@ -37,11 +35,12 @@ def load_tickets():
     except FileNotFoundError:
         return []
 
+# Writes to the ticket file database.
 def save_tickets(tickets):
     with open(TICKETS_FILE, "w") as f:
         json.dump(tickets, f, indent=4)
 
-# Read the Employees Database
+# Read/Loads the employee file.
 def load_employees():
     try:
         with open(EMPLOYEE_FILE, "r") as f:
@@ -49,14 +48,14 @@ def load_employees():
     except FileNotFoundError:
         return {}
 
-# Generate new ticket number
+# Generate a new ticket number
 def generate_ticket_number():
     tickets = load_tickets()
     current_year = datetime.now().year  # Get the current year dynamically
     ticket_count = str(len(tickets) + 1).zfill(4)  # Zero-padded ticket count
     return f"TKT-{current_year}-{ticket_count}"  # Format: TKT-YYYY-XXXX
 
-# Send confirmation email
+# Send a confirmation email
 def send_email(to_email, subject, body):
     msg = MIMEText(body)
     msg["Subject"] = subject # Subject provided by user input.
@@ -68,7 +67,7 @@ def send_email(to_email, subject, body):
             server.starttls()
             server.login(EMAIL_ACCOUNT, EMAIL_PASSWORD)
             server.sendmail(EMAIL_ACCOUNT, to_email, msg.as_string())
-            print("INFO - Confirmation email was successfully sent.")
+            #print("INFO - Confirmation email was successfully sent.")
     except Exception as e:
         print(f"ERROR - Email sending failed: {e}")
 
@@ -111,13 +110,13 @@ def fetch_email_replies():
         mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD) # Graceful Email system login.
         mail.select("inbox") # Select the inbox for reading/monitoring.
 
-        _, messages = mail.search(None, "UNSEEN") # UNSEEN or ALL -- Only reading UNSEEN currently.
+        _status, messages = mail.search(None, "UNSEEN") # UNSEEN or ALL -- Only reading UNSEEN currently.
         email_ids = messages[0].split()
 
         tickets = load_tickets() # Read the tickets file into memory.
         
         for email_id in email_ids:
-            _, msg_data = mail.fetch(email_id, "(RFC822)")
+            _status, msg_data = mail.fetch(email_id, "(RFC822)")
             for response_part in msg_data:
                 if isinstance(response_part, tuple):
                     msg = email.message_from_bytes(response_part[1])
@@ -128,7 +127,7 @@ def fetch_email_replies():
                     from_email = msg.get("From")
                     match_ticket_reply = re.search(r"(?i)\bTKT-\d{4}-\d+\b", subject)  # Match "TKT-YYYY-XXXX" with no case sensitivity and should accept RE: re: and whitespace.
                     ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None # Cleans up the extracted ticket number so it doesn"t include "RE:".
-                    print(f"DEBUG - Extracted ticket ID: {ticket_id} from subject: {subject}")
+                    #print(f"DEBUG - Extracted ticket ID: {ticket_id} from subject: {subject}")
 
 
                     if not ticket_id:
@@ -145,8 +144,8 @@ def fetch_email_replies():
                             break
                         
         #save_tickets(tickets) # Commenting this out to prevent constant writing to the tickets.json file.
-        mail.logout()
-        print("INFO - Email fetch job completed.")
+        mail.logout() # Graceful logout.
+        #print("INFO - Email fetch job completed.")
     except Exception as e:
         print(f"Error fetching emails: {e}")
 
@@ -154,7 +153,7 @@ def fetch_email_replies():
 def background_email_monitor():
     while True:
         fetch_email_replies()
-        time.sleep(120)  # Wait for  emails every 2 minutes.
+        time.sleep(300)  # Wait for  emails every 5 minutes.
 
 threading.Thread(target=background_email_monitor, daemon=True).start()
 
@@ -249,4 +248,4 @@ def close_ticket(ticket_number):
     return jsonify({"message": "Ticket not found"}), 404
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run() #debug=True

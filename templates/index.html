@@ -90,7 +90,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="https://mattfaulkner.us-southeast-1.linodeobjects.com/logo_color.png" alt="BlueBotPC Logo">
+            <img src="static\logo_color.png" alt="BlueBotPC Logo">
         </div>
         <h2>Submit a Ticket</h2>
         <form method="post">
@@ -106,13 +106,13 @@
             <label for="message">Ticket Message:</label>
             <textarea id="message" name="message" required></textarea>
 
-            <label for="type">Request Type:</label>
+            <label for="type">Ticket Type:</label>
             <select id="type" name="type">
-                <option value="Access">Access</option>
-                <option value="Request">Request</option>
+                <option value="Access">Request</option>
+                <option value="Request">Maintenance</option>
                 <option value="Incident">Incident</option>
-                <option value="Maintenance">Maintenance</option>
-                <option value="Change">Change</option>
+                <option value="Maintenance">Change</option>
+                <option value="Change">Access</option>
             </select>
 
             <button type="submit" class="submit-btn">Submit Ticket</button>

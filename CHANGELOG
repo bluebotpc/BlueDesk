@@ -1,7 +1,9 @@
 # CHANGELOG
 
+**Jan.20.2025-3:** locally stored GoobyFRS Branding, removing dependancy on my personal Object Storage. Disabing Debug mode out of the box for a leaner runtime.
+
 **Jan.20.2025-2:** Morning patch - Close Ticket button design matches my standards. Code has been further commented.
 
 **Jan.20.2025-1:** Basic implementation for closing tickets. Not production ready. Bedtime.
 
-**Jan.18.2025:** Secure cookie encoding. Add gunicorn to dependancies.
+**Jan.18.2025-1:** Secure cookie encoding. Add gunicorn to dependancies.
