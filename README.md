@@ -2,7 +2,7 @@
 
 Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and One Man MSPs.
 
-**Current Version:**  v0.1.5
+**Current Version:**  v0.1.6
 
 ## How GoobyDesk works
 

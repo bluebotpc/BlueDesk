@@ -27,7 +27,7 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password - No OAuth or OAuth2
 SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
 SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
 
-# Read Tickets
+# Read/Loads the ticket file into memory.
 def load_tickets():
     try:
         with open(TICKETS_FILE, "r") as f:
@@ -35,11 +35,12 @@ def load_tickets():
     except FileNotFoundError:
         return []
 
+# Writes to the ticket file database.
 def save_tickets(tickets):
     with open(TICKETS_FILE, "w") as f:
         json.dump(tickets, f, indent=4)
 
-# Read the Employees Database
+# Read/Loads the employee file.
 def load_employees():
     try:
         with open(EMPLOYEE_FILE, "r") as f:
@@ -47,14 +48,14 @@ def load_employees():
     except FileNotFoundError:
         return {}
 
-# Generate new ticket number
+# Generate a new ticket number
 def generate_ticket_number():
     tickets = load_tickets()
     current_year = datetime.now().year  # Get the current year dynamically
     ticket_count = str(len(tickets) + 1).zfill(4)  # Zero-padded ticket count
     return f"TKT-{current_year}-{ticket_count}"  # Format: TKT-YYYY-XXXX
 
-# Send confirmation email
+# Send a confirmation email
 def send_email(to_email, subject, body):
     msg = MIMEText(body)
     msg["Subject"] = subject # Subject provided by user input.
