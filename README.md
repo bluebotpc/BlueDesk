@@ -62,3 +62,15 @@ python app.py
 CTRL+C to break. ```deactivate``` to clean up.
 
 ### Screenshots
+
+#### Landing Page
+
+![LandingPage-Wiki](https://github.com/user-attachments/assets/66267c63-5d02-4802-ac4b-32c67c8735cd)
+
+#### Login
+
+![Login-Wiki](https://github.com/user-attachments/assets/a9c86ea6-710c-468a-bd8d-6ab7020cdcb5)
+
+#### Dashboard
+
+![Dashboard-Wiki](https://github.com/user-attachments/assets/30b21d8f-e5cd-4713-a2b2-26f958db29e5)
