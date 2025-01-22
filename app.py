@@ -206,12 +206,13 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        employees = load_employees()
-        
-        # If successful login, send to the dashboard.
-        if username == employees.get("tech_username") and password == employees.get("tech_authcode"):
-            session["technician"] = True
-            return redirect(url_for("dashboard"))
+        employees = load_employees()  # Load list of technicians
+
+        # Iterate through the list of employees to check for a match
+        for defined_technician in employees:
+            if username == defined_technician["tech_username"] and password == defined_technician["tech_authcode"]:
+                session["technician"] = username  # Store the technician's username in the session
+                return redirect(url_for("dashboard"))
         
     return render_template("login.html")
 
