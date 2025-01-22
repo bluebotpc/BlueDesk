@@ -200,7 +200,7 @@ def home():
     
     return render_template("index.html")
 
-# 
+# Route/routine for the technician login process.
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -216,6 +216,7 @@ def login():
         
     return render_template("login.html")
 
+# Route/routine for the technician login process
 @app.route("/dashboard")
 def dashboard():
     if not session.get("technician"): # If the local machine does not have a session token/cookie containing the 'technician' tag.
