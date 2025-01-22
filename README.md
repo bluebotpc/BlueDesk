@@ -2,7 +2,7 @@
 
 Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and One Man MSPs.
 
-**Current Version:**  v0.1.10
+**Current Version:**  v0.1.11
 
 ## How GoobyDesk works
 
@@ -36,7 +36,6 @@ CTRL+C to break. ```deactivate``` to clean up.
 ### Goals and Roadmap
 
 - Ability to set In-Progress status.
-- OAuth2.0 Support for Email Authentication.
 - Fine tune email reply handling.
 - HTML Form validation.
 - File locking and retry support.

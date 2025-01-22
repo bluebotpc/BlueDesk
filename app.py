@@ -3,8 +3,8 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 import json # My preffered method of "database" replacements.
 import smtplib # Outgoing Email
 import imaplib # Incoming Email
-import email # Email
-import threading # Monitor Email for Replies in the background
+import email # Reading Replies
+import threading # Background processes
 import time
 import re # Regex Support for Email Replies
 import os # Dotenv requirement
@@ -18,7 +18,7 @@ app = Flask(__name__)
 app.secret_key = "secretdemokey"
 # I attempted to leverage the dotenv file but had trouble.
 
-# Load environment variables from .env
+# Load environment variables from .env in the local folder.
 load_dotenv(dotenv_path=".env")
 TICKETS_FILE = os.getenv("TICKETS_FILE")
 EMPLOYEE_FILE = os.getenv("EMPLOYEE_FILE")
@@ -57,7 +57,7 @@ def generate_ticket_number():
     return f"TKT-{current_year}-{ticket_count}"  # Format: TKT-YYYY-XXXX
 
 # Send a confirmation email
-def send_email(to_email, subject, body, html=False):
+def send_email(to_email, subject, body, html=True):
     msg = MIMEMultipart()
     msg["Subject"] = subject
     msg["From"] = EMAIL_ACCOUNT
@@ -116,13 +116,13 @@ def fetch_email_replies():
         mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD) # Graceful Email system login.
         mail.select("inbox") # Select the inbox for reading/monitoring.
 
-        _status, messages = mail.search(None, "UNSEEN") # UNSEEN or ALL -- Only reading UNSEEN currently.
+        messages = mail.search(None, "UNSEEN") # UNSEEN or ALL -- Only reading UNSEEN currently.
         email_ids = messages[0].split()
 
         tickets = load_tickets() # Read the tickets file into memory.
         
         for email_id in email_ids:
-            _status, msg_data = mail.fetch(email_id, "(RFC822)")
+            msg_data = mail.fetch(email_id, "(RFC822)")
             for response_part in msg_data:
                 if isinstance(response_part, tuple):
                     msg = email.message_from_bytes(response_part[1])
@@ -136,7 +136,7 @@ def fetch_email_replies():
                     #print(f"DEBUG - Extracted ticket ID: {ticket_id} from subject: {subject}")
 
                     if not ticket_id:
-                        continue  # Skip if no valid ticket-id is found
+                        continue  # Skip and do nothing if no valid ticket-id is found.
 
                     body = extract_email_body(msg)
 
@@ -148,7 +148,7 @@ def fetch_email_replies():
                             print(f"INFO - Updated ticket {ticket_id} with reply from {from_email}")
                             break
                         
-        #save_tickets(tickets) # Commenting this out to prevent constant writing to the tickets.json file.
+        #save_tickets(tickets)
         mail.logout() # Graceful logout.
         #print("INFO - Email fetch job completed.")
     except Exception as e:
@@ -219,10 +219,9 @@ def login():
 @app.route("/dashboard")
 def dashboard():
     if not session.get("technician"): # If the local machine does not have a session token/cookie containing the 'technician' tag.
-        # Placeholder line - I may add some sort of print statement for debug logging. Future standard logging should eventually be implemented.
         return redirect(url_for("login")) # Redirect them to the login page.
     
-    tickets = load_tickets() # Load the ticket-db into memory via a read operation.
+    tickets = load_tickets()
     # Filtering out tickets with the Closed Status.
     open_tickets = [ticket for ticket in tickets if ticket["status"].lower() != "closed"]
     return render_template("dashboard.html", tickets=open_tickets)
@@ -230,31 +229,38 @@ def dashboard():
 # Opens a ticket in raw json. This should be tweaked eventually.
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
+
+    if "technician" not in session: # Validate logged in user.
+        return "Forbidden: Unauthorized Access", 403 # Return a 403 page.
+    
     tickets = load_tickets() 
     ticket = next((t for t in tickets if t["ticket_number"] == ticket_number), None)
     if ticket:
         return jsonify(ticket)
-    return "Ticket Number in the URL was not found", 404
-
-# Removes the session cookie from the user browser, sending the Technician/user back to the login page.
-@app.route("/logout")
-def logout():
-    session.pop("technician", None)
-    return redirect(url_for("login")) # Send a logged out user back to the login page. This can be customized.
+    
+    return "Ticket Number in the URL was not found.", 404
 
 # Routine to close a ticket. This invloves a write operation to the tickets.json file.
 @app.route("/close_ticket/<ticket_number>", methods=["POST"])
 def close_ticket(ticket_number):
     if not session.get("technician"):  # Ensure only logged-in techs can close tickets.
         return jsonify({"message": "Unauthorized"}), 403
+    
     tickets = load_tickets() # Loads tickets.json into memory.
     for ticket in tickets:
         if ticket["ticket_number"] == ticket_number: # Basic input validation.
             ticket["status"] = "Closed"
-            save_tickets(tickets) # Writes to the tickets.json file.
-            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # This appears to be a pop-up. I'm not sure I am happy with this.
-        # If the ticket was not found....
+            save_tickets(tickets)
+            return jsonify({"message": f"Ticket {ticket_number} has been closed."})
+        
+    # If the ticket was not found....
     return jsonify({"message": "Ticket not found"}), 404
+
+# Removes the session cookie from the user browser, sending the Technician/user back to the login page.
+@app.route("/logout")
+def logout():
+    session.pop("technician", None)
+    return redirect(url_for("login")) # Send a logged out user back to the login page. This can be customized.
 
 if __name__ == "__main__":
     app.run(debug=True) #debug=True
