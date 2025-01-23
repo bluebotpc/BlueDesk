@@ -95,16 +95,16 @@
         <h2>Submit a Ticket</h2>
         <form method="post">
             <label for="name">Your Name:</label>
-            <input type="text" id="name" name="name" required>
+            <input type="text" id="name" name="name" required minlength="2" maxlength="24">
 
             <label for="email">Your Email:</label>
             <input type="email" id="email" name="email" required>
 
             <label for="subject">Ticket Subject:</label>
-            <input type="text" id="subject" name="subject" required>
+            <input type="text" id="subject" name="subject" required minlength="6" maxlength="24">
 
             <label for="message">Ticket Message:</label>
-            <textarea id="message" name="message" required></textarea>
+            <textarea id="message" name="message" required minlength="8" maxlength="512"></textarea>
 
             <label for="type">Ticket Type:</label>
             <select id="type" name="type">
