@@ -81,20 +81,21 @@
         <div class="logo">
             <img src="https://mattfaulkner.us-southeast-1.linodeobjects.com/gooby_logo_white.webp" alt="GoobyDesk Logo">
         </div>
-        <h2>Ticket Commander</h2>
+        <h2>GoobyDesk - Ticket Commander</h2>
 
         <div class="ticket-details">
             <p><strong>Ticket Number:</strong> {{ ticket.ticket_number }}</p>
             <p><strong>Submitted By:</strong> {{ ticket.requestor_name }} ({{ ticket.requestor_email }})</p>
-            <p><strong>Subject:</strong> {{ ticket.subject }}</p>
+            <p><strong>Subject:</strong> {{ ticket.ticket_subject }}</p>
             <p><strong>Type:</strong> {{ ticket.request_type }}</p>
             <p><strong>Status:</strong> {{ ticket.ticket_status }}</p>
             <p><strong>Ticket Content:</strong> {{ticket.ticket_message}}</p>
+            <p><strong>End User Replies:</strong> {{ticket.ticket_notes}}</p>
         </div>
 
         <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'In-Progress')">Mark In-Progress</button>
 
-        <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Mark Closed</button>
+        <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Close Ticket</button>
         
         <script>
             function updateTicketStatus(ticketId, newStatus) {

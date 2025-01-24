@@ -38,14 +38,14 @@ def load_tickets():
 
 # Writes to the ticket file database.
 def save_tickets(tickets):
-    with open(TICKETS_FILE, "w") as f:
-        json.dump(tickets, f, indent=4)
+    with open(TICKETS_FILE, "w") as tkt_file_write_op:
+        json.dump(tickets, tkt_file_write_op, indent=4)
 
 # Read/Loads the employee file into memory.
 def load_employees():
     try:
-        with open(EMPLOYEE_FILE, "r") as tech_file:
-            return json.load(tech_file)
+        with open(EMPLOYEE_FILE, "r") as tech_file_read_op:
+            return json.load(tech_file_read_op)
     except FileNotFoundError:
         return {} # represents an empty dictionary.
 
@@ -119,7 +119,7 @@ def fetch_email_replies():
 
         status, messages = mail.search(None, "UNSEEN")  
         if status != "OK":
-            print("INFO - Email Fetch Login success.")
+            print("DEBUG - Reading Inbox via IMAP failed for an unknown reason.")
             return
 
         email_ids = messages[0].split()
@@ -151,7 +151,7 @@ def fetch_email_replies():
 
                     for ticket in tickets:
                         if ticket["ticket_number"] == ticket_id:
-                            ticket["ticket_notes"].append({"message": body})
+                            ticket["ticket_notes"].append({"ticket_message": body})
                             save_tickets(tickets)  
                             print(f"DEBUG - Updated ticket {ticket_id} with reply from {from_email}")
                             break
@@ -159,7 +159,7 @@ def fetch_email_replies():
         mail.logout()  
         print("INFO - Email fetch job completed successfully.")
     except Exception as e:
-        print(f"Error fetching emails: {e}")
+        print(f"ERROR - Error fetching emails: {e}")
 
 # Background email monitoring
 def background_email_monitor():
@@ -221,6 +221,8 @@ def login():
             if username == defined_technician["tech_username"] and password == defined_technician["tech_authcode"]:
                 session["technician"] = username  # Store the technician's username in the session cookie.
                 return redirect(url_for("dashboard"))
+            else:
+                return jsonify({"message": f"Technician Authentication Failed."}), 404
         
     return render_template("login.html")
 
@@ -277,7 +279,7 @@ def close_ticket(ticket_number):
     tickets = load_tickets() # Loads tickets.json into memory.
     for ticket in tickets:
         if ticket["ticket_number"] == ticket_number: # Basic input validation.
-            ticket["status"] = "Closed"
+            ticket["ticket_status"] = "Closed"
             save_tickets(tickets)
             return jsonify({"message": f"Ticket {ticket_number} has been closed."})
         
