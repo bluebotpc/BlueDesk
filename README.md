@@ -32,8 +32,6 @@ Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and O
 
 ## Goals and Roadmap to Production v1.0
 
-- Ability to set In-Progress status.
-- Individual Ticket html page rendering with controls. (Change Status, Read Notes)
 - User-Input validation and sanitation on public facing HTML forms.
 - File locking and retry support.
 - Ensure proper HTTP codes are sent to the user/client.
