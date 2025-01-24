@@ -190,7 +190,7 @@ def home():
             "request_type": request_type,
             "ticket_status": "Open",
             "submission_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "notes": []
+            "ticket_notes": []
         }
         
         tickets = load_tickets()
