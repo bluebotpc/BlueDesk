@@ -3,9 +3,9 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 import json # My preffered method of "database" replacements.
 import smtplib # Outgoing Email
 import imaplib # Incoming Email
-import email # Reading Replies
-import threading # Background processes
-import time
+import email # Reading and Crafting the emails.
+import threading # Background process.
+import time # Only used to sleep the background thread.
 import re # Regex Support for Email Replies
 import os # Dotenv requirement
 from dotenv import load_dotenv
@@ -16,7 +16,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "secretdemokey"
-# I attempted to leverage the dotenv file but had trouble.
+# I attempted to leverage the dotenv file but had trouble. I experienced poor performance on an OCI E2.1.Micro using the secrets module.
 
 # Load environment variables from .env in the local folder.
 load_dotenv(dotenv_path=".env")
@@ -31,8 +31,8 @@ SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/5
 # Read/Loads the ticket file into memory.
 def load_tickets():
     try:
-        with open(TICKETS_FILE, "r") as f:
-            return json.load(f)
+        with open(TICKETS_FILE, "r") as tkt_file:
+            return json.load(tkt_file)
     except FileNotFoundError:
         return [] # represents an empty list.
 
@@ -41,11 +41,11 @@ def save_tickets(tickets):
     with open(TICKETS_FILE, "w") as f:
         json.dump(tickets, f, indent=4)
 
-# Read/Loads the employee file.
+# Read/Loads the employee file into memory.
 def load_employees():
     try:
-        with open(EMPLOYEE_FILE, "r") as f:
-            return json.load(f)
+        with open(EMPLOYEE_FILE, "r") as tech_file:
+            return json.load(tech_file)
     except FileNotFoundError:
         return {} # represents an empty dictionary.
 
@@ -76,6 +76,7 @@ def send_email(to_email, subject, body, html=True):
             server.sendmail(EMAIL_ACCOUNT, to_email, msg.as_string())
     except Exception as e:
         print(f"ERROR - Email sending failed: {e}")
+    print(f"INFO - Confirmation Email sent to {to_email}")
 
 # extract_email_body is attempting to scrape the content of the "valid" TKT email replies. It skips attachments. I do not currently need this feature. 
 def extract_email_body(msg):
@@ -113,44 +114,50 @@ def extract_email_body(msg):
 def fetch_email_replies():
     try:
         mail = imaplib.IMAP4_SSL(IMAP_SERVER)
-        mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD) # Graceful Email system login.
-        mail.select("inbox") # Select the inbox for reading/monitoring.
+        mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD)  
+        mail.select("inbox")  
 
-        messages = mail.search(None, "UNSEEN") # UNSEEN or ALL -- Only reading UNSEEN currently.
+        status, messages = mail.search(None, "UNSEEN")  
+        if status != "OK":
+            print("INFO - Email Fetch Login success.")
+            return
+
         email_ids = messages[0].split()
+        tickets = load_tickets()  
 
-        tickets = load_tickets() # Read the tickets file into memory.
-        
         for email_id in email_ids:
-            msg_data = mail.fetch(email_id, "(RFC822)")
+            email_id = email_id.decode()  # Ensure it's a string
+            status, msg_data = mail.fetch(email_id, "(RFC822)")
+            if status != "OK" or not msg_data:
+                print(f"ERROR - Unable to fetch email {email_id}")
+                continue  
+
             for response_part in msg_data:
                 if isinstance(response_part, tuple):
                     msg = email.message_from_bytes(response_part[1])
                     subject, encoding = decode_header(msg["Subject"])[0]
                     if isinstance(subject, bytes):
                         subject = subject.decode(encoding or "utf-8")
-                    
+
                     from_email = msg.get("From")
-                    match_ticket_reply = re.search(r"(?i)\bTKT-\d{4}-\d+\b", subject)  # Match "TKT-YYYY-XXXX" with no case sensitivity and should accept RE: re: and whitespace.
-                    ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None # Cleans up the extracted ticket number so it doesn"t include "RE:".
-                    #print(f"DEBUG - Extracted ticket ID: {ticket_id} from subject: {subject}")
+                    match_ticket_reply = re.search(r"(?i)\bTKT-\d{4}-\d+\b", subject)
+                    ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None  
+                    print(f"DEBUG - Extracted ticket ID: {ticket_id} from subject: {subject}")
 
                     if not ticket_id:
-                        continue  # Skip and do nothing if no valid ticket-id is found.
+                        continue  
 
                     body = extract_email_body(msg)
 
-                    # Find the corresponding ticket
                     for ticket in tickets:
                         if ticket["ticket_number"] == ticket_id:
-                            ticket["notes"].append({"message": body})
-                            save_tickets(tickets)  # Save changes to the ticket-db
-                            print(f"INFO - Updated ticket {ticket_id} with reply from {from_email}")
+                            ticket["ticket_notes"].append({"message": body})
+                            save_tickets(tickets)  
+                            print(f"DEBUG - Updated ticket {ticket_id} with reply from {from_email}")
                             break
                         
-        #save_tickets(tickets)
-        mail.logout() # Graceful logout.
-        #print("INFO - Email fetch job completed.")
+        mail.logout()  
+        print("INFO - Email fetch job completed successfully.")
     except Exception as e:
         print(f"Error fetching emails: {e}")
 
@@ -169,8 +176,8 @@ def home():
     if request.method == "POST":
         name = request.form["name"]
         email = request.form["email"]
-        subject = request.form["subject"]
-        message = request.form["message"]
+        ticket_subject = request.form["subject"]
+        ticket_message = request.form["message"]
         request_type = request.form["type"]
         ticket_number = generate_ticket_number()
         
@@ -178,8 +185,8 @@ def home():
             "ticket_number": ticket_number,
             "requestor_name": name,
             "requestor_email": email,
-            "subject": subject,
-            "message": message,
+            "subject": ticket_subject,
+            "message": ticket_message,
             "request_type": request_type,
             "status": "Open",
             "submission_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -194,7 +201,7 @@ def home():
         email_body = render_template("/new-ticket-email.html", ticket=new_ticket)
 
         # Send the email with HTML format
-        send_email(email, f"{ticket_number} - {subject}", email_body, html=True)
+        send_email(email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
         
         return redirect(url_for("home"))
     
@@ -208,10 +215,11 @@ def login():
         password = request.form["password"]
         employees = load_employees()  # Load list of technicians
 
-        # Iterate through the list of employees to check for a match
+        # Iterate through the list of employees to check for a match.
+        # After adding this feature/function the simplified ability to only have one defined technician is broke. This should be resolved before production release.
         for defined_technician in employees:
             if username == defined_technician["tech_username"] and password == defined_technician["tech_authcode"]:
-                session["technician"] = username  # Store the technician's username in the session
+                session["technician"] = username  # Store the technician's username in the session cookie.
                 return redirect(url_for("dashboard"))
         
     return render_template("login.html")
@@ -227,21 +235,40 @@ def dashboard():
     open_tickets = [ticket for ticket in tickets if ticket["status"].lower() != "closed"]
     return render_template("dashboard.html", tickets=open_tickets)
 
-# Opens a ticket in raw json. This should be tweaked eventually.
+# Route/routine for viewing a ticket in raw json. This will work differently before production release v1.0.
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
+    if "technician" not in session:  # Validate logged-in user
+        return "Forbidden: Unauthorized Access", 403  # Return a 403 page
 
-    if "technician" not in session: # Validate logged in user.
-        return "Forbidden: Unauthorized Access", 403 # Return a 403 page.
-    
-    tickets = load_tickets() 
+    tickets = load_tickets()
     ticket = next((t for t in tickets if t["ticket_number"] == ticket_number), None)
-    if ticket:
-        return jsonify(ticket)
     
+    if ticket:
+        return render_template("ticket-commander.html", ticket=ticket)
+
     return "Ticket Number in the URL was not found.", 404
 
-# Routine to close a ticket. This invloves a write operation to the tickets.json file.
+## Route/routine for updating a ticket. This is new and might get removed.
+@app.route("/ticket/<ticket_number>/update_status/<status>", methods=["POST"])
+def update_ticket_status(ticket_number, status):
+    if not session.get("technician"):  # Ensure only logged-in techs can update tickets.
+        return jsonify({"message": "Unauthorized"}), 403
+    
+    valid_statuses = ["Open", "In-Progress", "Closed"]
+    if status not in valid_statuses:
+        return jsonify({"message": "Invalid status provided"}), 400
+
+    tickets = load_tickets()  # Load tickets.json
+    for ticket in tickets:
+        if ticket["ticket_number"] == ticket_number:  # Match ticket ID
+            ticket["ticket_status"] = status  # Update correct key
+            save_tickets(tickets)  # Save changes
+            return jsonify({"message": f"Ticket {ticket_number} updated to {status}."})
+        
+    return jsonify({"message": "Ticket not found"}), 404
+
+# Route/routine to close a ticket. This invloves a write operation to the tickets.json file.
 @app.route("/close_ticket/<ticket_number>", methods=["POST"])
 def close_ticket(ticket_number):
     if not session.get("technician"):  # Ensure only logged-in techs can close tickets.

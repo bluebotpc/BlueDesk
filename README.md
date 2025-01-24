@@ -2,7 +2,7 @@
 
 Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and One Man MSPs.
 
-**Current Version:**  v0.1.12
+**Current Version:**  v0.2.0
 
 [GoobyDesk Repo Wiki](https://github.com/GoobyFRS/GoobyDesk/wiki) & [Production Deployment Guide](https://github.com/GoobyFRS/GoobyDesk/wiki/Production-Deployment-Guide) you can find information on my code standards, my variables, and other data I think is important for an open source project to be successful after the creator moves on.
 
@@ -11,7 +11,7 @@ Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and O
 - GoobyDesk is a Python3, Flask-based web application.
   - By default, the Flask app will run at ```http://127.0.0.1:5000``` during local development.
   - Production instances should be ran behind a Python3 WSGI server such as [Gunicorn](https://gunicorn.org/).
-  - Production instances should be ran behind a Reverse Proxy such as [Caddy](https://caddyserver.com/).
+  - Production Gunicorn instances should be ran behind a Reverse Proxy such as [Caddy](https://caddyserver.com/).
 - Mobile-friendly landing page with lightweight ticket submission.
   - Requestor Name
   - Requestor Contact Email
@@ -76,3 +76,5 @@ CTRL+C to break. ```deactivate``` to clean up.
 ![Dashboard-GHWiki](https://github.com/user-attachments/assets/30b21d8f-e5cd-4713-a2b2-26f958db29e5)
 
 #### Confirmation Email Template
+
+![FirstEmail-GHWiki](https://github.com/user-attachments/assets/9fa30684-ab70-49b9-b897-1fb106802c06)

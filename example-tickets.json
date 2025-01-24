@@ -3,11 +3,11 @@
         "ticket_number": "TKT-2025-0001",
         "requestor_name": "Mom",
         "requestor_email": "mom@example.com",
-        "subject": "First Ticket",
-        "message": "Can you help me with my computer issue?",
+        "ticket_subject": "First Ticket",
+        "ticket_message": "Can you help me with my computer issue?",
         "request_type": "Request",
-        "status": "Open",
+        "ticket_status": "Open",
         "submission_date": "2025-01-02 10:00:30",
-        "notes": []
+        "ticket_notes": []
     }
 ]
