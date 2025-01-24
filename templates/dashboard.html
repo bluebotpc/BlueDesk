@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico"/>
+    <link rel="icon" type="image/x-icon" href="static/favicon.ico"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Matt Faulkner">
@@ -113,14 +113,14 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="static\GoobyLogo.webp" alt=" GoobyFRSLogo">
+            <img src="static/GoobyLogo.webp" alt=" GoobyFRSLogo">
         </div>
         <h2>GoobyDesk Technician Dashboard</h2>
         <ul class="ticket-list">
             {% for ticket in tickets %}
                 <li>
                     <a href="{{ url_for('ticket_detail', ticket_number=ticket.ticket_number) }}">
-                        {{ ticket.ticket_number }} - {{ ticket.subject }} ({{ ticket.status }})
+                        {{ ticket.ticket_number }} - {{ ticket.ticket_subject }} ({{ ticket.ticket_status }})
                     </a>
                 </li>
             {% endfor %}

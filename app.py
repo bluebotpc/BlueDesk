@@ -188,7 +188,7 @@ def home():
             "subject": ticket_subject,
             "message": ticket_message,
             "request_type": request_type,
-            "status": "Open",
+            "ticket_status": "Open",
             "submission_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "notes": []
         }
@@ -232,7 +232,7 @@ def dashboard():
     
     tickets = load_tickets()
     # Filtering out tickets with the Closed Status.
-    open_tickets = [ticket for ticket in tickets if ticket["status"].lower() != "closed"]
+    open_tickets = [ticket for ticket in tickets if ticket["ticket_status"].lower() != "closed"]
     return render_template("dashboard.html", tickets=open_tickets)
 
 # Route/routine for viewing a ticket in raw json. This will work differently before production release v1.0.

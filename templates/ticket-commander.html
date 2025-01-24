@@ -88,13 +88,13 @@
             <p><strong>Submitted By:</strong> {{ ticket.requestor_name }} ({{ ticket.requestor_email }})</p>
             <p><strong>Subject:</strong> {{ ticket.subject }}</p>
             <p><strong>Type:</strong> {{ ticket.request_type }}</p>
-            <p><strong>Status:</strong> {{ ticket.status }}</p>
+            <p><strong>Status:</strong> {{ ticket.ticket_status }}</p>
             <p><strong>Ticket Content:</strong> {{ticket.message}}</p>
         </div>
 
         <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'In-Progress')">Mark In-Progress</button>
 
-        <button class="status-btn" style="background-color: #d9534f;" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Mark Closed</button>
+        <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Mark Closed</button>
         
         <script>
             function updateTicketStatus(ticketId, newStatus) {
