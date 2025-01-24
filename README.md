@@ -32,7 +32,6 @@ Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and O
 
 ## Goals and Roadmap to Production v1.0
 
-- User-Input validation and sanitation on public facing HTML forms.
 - File locking and retry support.
 - Ensure proper HTTP codes are sent to the user/client.
 - Implement standardized ```/var/log/goobydesk``` logging.
