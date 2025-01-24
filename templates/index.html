@@ -95,16 +95,16 @@
         <h2>Submit a Ticket</h2>
         <form method="post">
             <label for="name">Your Name:</label>
-            <input type="text" id="name" name="name" required minlength="2" maxlength="24">
+            <input type="text" id="name" name="name" placeholder="Jeremy Clarkson" minlength="2" maxlength="24" required>
 
             <label for="email">Your Email:</label>
-            <input type="email" id="email" name="email" required>
+            <input type="email" id="email" name="email" placeholder="hammond@example.com" required>
 
             <label for="subject">Ticket Subject:</label>
-            <input type="text" id="subject" name="subject" required minlength="6" maxlength="48">
+            <input type="text" id="subject" name="subject" placeholder="Replace Laptop Screen" minlength="6" maxlength="48" required>
 
             <label for="message">Ticket Message:</label>
-            <textarea id="message" name="message" required minlength="8" maxlength="512"></textarea>
+            <textarea id="message" name="message"  placeholder="Please provide details to submit your request."minlength="8" maxlength="512" required></textarea>
 
             <label for="type">Ticket Type:</label>
             <select id="type" name="type">
@@ -117,6 +117,10 @@
 
             <button type="submit" class="submit-btn">Submit Ticket</button>
         </form>
+        <!-- I like this below the submit button, but this is very specific to me. May leave it commented out for now. -->
+        <!-- <a target="_blank" href="https://www.bluebotpc.com" rel="noopener noreferrer">Website</a> | 
+        <a target="_blank" href="https://discord.gg/jFr5JnTUZd" rel="noopener noreferrer">Discord</a> |
+        <a target="_blank" href="https://forms.gle/uiEjs79uYD2KcfxT9" rel="noopener noreferrer">Submit Feedback</a> -->
         <p class="footer-text">©2025 GoobyDesk, a BlueBotPC platform. All rights reserved.</p>
     </div>
 </body>

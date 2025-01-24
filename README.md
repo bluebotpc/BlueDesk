@@ -2,7 +2,7 @@
 
 Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and One Man MSPs.
 
-**Current Version:**  v0.1.14
+**Current Version:**  v0.2.1
 
 [GoobyDesk Repo Wiki](https://github.com/GoobyFRS/GoobyDesk/wiki) & [Production Deployment Guide](https://github.com/GoobyFRS/GoobyDesk/wiki/Production-Deployment-Guide) you can find information on my code standards, my variables, and other data I think is important for an open source project to be successful after the creator moves on.
 
@@ -32,7 +32,6 @@ Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and O
 
 ## Goals and Roadmap to Production v1.0
 
-- User-Input validation and sanitation on public facing HTML forms.
 - File locking and retry support.
 - Ensure proper HTTP codes are sent to the user/client.
 - Implement standardized ```/var/log/goobydesk``` logging.
@@ -76,3 +75,7 @@ CTRL+C to break. ```deactivate``` to clean up.
 #### Confirmation Email Template
 
 ![FirstEmail-GHWiki](https://github.com/user-attachments/assets/9fa30684-ab70-49b9-b897-1fb106802c06)
+
+#### Ticket Commander
+
+![TicketCommander-GHWiki](https://github.com/user-attachments/assets/0d7f315f-e542-4cad-8632-985d06476fa4)

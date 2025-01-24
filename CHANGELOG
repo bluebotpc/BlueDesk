@@ -1,5 +1,9 @@
 # CHANGELOG
 
+**Jan.24.2025-2:** Resolved minor bugs and unexpected ticket-commander behavior.
+
+**Jan.24.2025-1:** Ticket Commander/Ticket View implemented but it is buggy.
+
 **Jan.22.2025-1:** Now supporting multiple employees to have access. Found an issue where a 404 was provided instead of the correct HTTP 403.
 
 **Jan.21.2025-1:** Initial email now sends an HTML template including TKT_ID, Status, and the user provided notes as a reminder.
