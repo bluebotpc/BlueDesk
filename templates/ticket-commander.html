@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/x-icon" href="/static/favicon.ico"/>
+    <link rel="icon" type="image/x-icon" href="static/favicon.ico"/>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Matt Faulkner">
-    <title>GoobyDesk - Submit a Ticket</title>
+    <title>GoobyDesk - Ticket Commander</title>
     <style>
         body {
             background-color: #ffffff;
@@ -41,30 +41,19 @@
             font-weight: 700;
         }
 
-        label {
-            font-size: 16px;
-            font-weight: 600;
-            display: block;
-            margin-top: 10px;
+        .ticket-details {
             text-align: left;
+            font-size: 16px;
+            line-height: 1.5;
+            color: #333;
+            margin-top: 15px;
+        }
+
+        .ticket-details strong {
             color: #000;
         }
 
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        textarea {
-            height: 100px;
-            resize: vertical;
-        }
-
-        .submit-btn {
+        .status-btn {
             background-color: #284389;
             color: #fff;
             font-size: 16px;
@@ -73,10 +62,10 @@
             border-radius: 4px;
             cursor: pointer;
             margin-top: 15px;
-            width: 100%;
+            width: 48%;
         }
 
-        .submit-btn:hover {
+        .status-btn:hover {
             background-color: #1f356b;
         }
 
@@ -90,33 +79,42 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="static/GoobyLogo.webp" alt="GoobyFRS Logo">
+            <img src="static/GoobyLogo.webp" alt="GoobyDesk Logo">
         </div>
-        <h2>Submit a Ticket</h2>
-        <form method="post">
-            <label for="name">Your Name:</label>
-            <input type="text" id="name" name="name" required minlength="2" maxlength="24">
+        <h2>Ticket Commander</h2>
 
-            <label for="email">Your Email:</label>
-            <input type="email" id="email" name="email" required>
+        <div class="ticket-details">
+            <p><strong>Ticket Number:</strong> {{ ticket.ticket_number }}</p>
+            <p><strong>Submitted By:</strong> {{ ticket.requestor_name }} ({{ ticket.requestor_email }})</p>
+            <p><strong>Subject:</strong> {{ ticket.subject }}</p>
+            <p><strong>Type:</strong> {{ ticket.request_type }}</p>
+            <p><strong>Status:</strong> {{ ticket.ticket_status }}</p>
+            <p><strong>Ticket Content:</strong> {{ticket.ticket_message}}</p>
+        </div>
 
-            <label for="subject">Ticket Subject:</label>
-            <input type="text" id="subject" name="subject" required minlength="6" maxlength="48">
+        <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'In-Progress')">Mark In-Progress</button>
 
-            <label for="message">Ticket Message:</label>
-            <textarea id="message" name="message" required minlength="8" maxlength="512"></textarea>
+        <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Mark Closed</button>
+        
+        <script>
+            function updateTicketStatus(ticketId, newStatus) {
+                if (!ticketId) {
+                    alert("Ticket Number was NOT found. Try again.");
+                return;
+    }
 
-            <label for="type">Ticket Type:</label>
-            <select id="type" name="type">
-                <option value="Access">Request</option>
-                <option value="Request">Maintenance</option>
-                <option value="Incident">Incident</option>
-                <option value="Maintenance">Change</option>
-                <option value="Change">Access</option>
-            </select>
+    fetch(`/ticket/${ticketId}/update_status/${newStatus}`, {  // Updated path
+        method: "POST"
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+        location.reload();  // Refresh dashboard after update
+    })
+    .catch(error => console.error("Error:", error));
+}
+        </script>        
 
-            <button type="submit" class="submit-btn">Submit Ticket</button>
-        </form>
         <p class="footer-text">©2025 GoobyDesk, a BlueBotPC platform. All rights reserved.</p>
     </div>
 </body>
