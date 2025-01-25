@@ -253,7 +253,7 @@ def ticket_detail(ticket_number):
     return "Ticket Number in the URL was not found.", 404
 
 ## Route/routine for updating a ticket. This is new and might get removed.
-@app.route("/ticket/<ticket_number>/update_status/<status>", methods=["POST"])
+@app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only logged-in techs can update tickets.
         return jsonify({"message": "Unauthorized"}), 403
