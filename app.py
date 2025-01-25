@@ -254,20 +254,20 @@ def ticket_detail(ticket_number):
 
 ## Route/routine for updating a ticket. This is new and might get removed.
 @app.route("/ticket/<ticket_number>/update_status/<status>", methods=["POST"])
-def update_ticket_status(ticket_number, status):
+def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only logged-in techs can update tickets.
         return jsonify({"message": "Unauthorized"}), 403
     
     valid_statuses = ["Open", "In-Progress", "Closed"]
-    if status not in valid_statuses:
+    if ticket_status not in valid_statuses:
         return jsonify({"message": "Invalid status provided"}), 400
 
     tickets = load_tickets()  # Load tickets.json
     for ticket in tickets:
-        if ticket["ticket_number"] == ticket_number:  # Match ticket ID
-            ticket["ticket_status"] = status  # Update correct key
+        if ticket["ticket_number"] == ticket_number: 
+            ticket["ticket_status"] = ticket_status  
             save_tickets(tickets)  # Save changes
-            return jsonify({"message": f"Ticket {ticket_number} updated to {status}."})
+            return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."})
         
     return jsonify({"message": "Ticket not found"}), 404
 
