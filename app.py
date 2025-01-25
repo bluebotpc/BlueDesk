@@ -212,8 +212,8 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+        username = request.form["tech_username_box"]
+        password = request.form["tech_password_box"]
         employees = load_employees()  # Load list of technicians
 
         # Iterate through the list of employees to check for a match.
