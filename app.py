@@ -3,11 +3,11 @@ from flask import Flask, render_template, request, redirect, url_for, session, j
 import json # My preffered method of "database" replacements.
 import smtplib # Outgoing Email
 import imaplib # Incoming Email
-import email # Reading and Crafting the emails.
 import threading # Background process.
 import time # Only used to sleep the background thread.
 import re # Regex Support for Email Replies
 import os # Dotenv requirement
+import email
 from dotenv import load_dotenv
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
@@ -57,26 +57,26 @@ def generate_ticket_number():
     return f"TKT-{current_year}-{ticket_count}"  # Format: TKT-YYYY-XXXX
 
 # Send a confirmation email
-def send_email(to_email, ticket_subject, body, html=True):
+def send_email(requestor_email, ticket_subject, ticket_message, html=True):
     msg = MIMEMultipart()
     msg["Subject"] = ticket_subject
     msg["From"] = EMAIL_ACCOUNT
-    msg["To"] = to_email
+    msg["To"] = requestor_email
     
     # Attach body as plain text and/or HTML
     if html:
-        msg.attach(MIMEText(body, "html"))
+        msg.attach(MIMEText(ticket_message, "html"))
     else:
-        msg.attach(MIMEText(body, "plain"))
+        msg.attach(MIMEText(ticket_message, "plain"))
     
     try:
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
             server.starttls()
             server.login(EMAIL_ACCOUNT, EMAIL_PASSWORD)
-            server.sendmail(EMAIL_ACCOUNT, to_email, msg.as_string())
+            server.sendmail(EMAIL_ACCOUNT, requestor_email, msg.as_string())
     except Exception as e:
         print(f"ERROR - Email sending failed: {e}")
-    print(f"INFO - Confirmation Email sent to {to_email}")
+    print(f"INFO - Confirmation Email sent to {requestor_email}")
 
 # extract_email_body is attempting to scrape the content of the "valid" TKT email replies. It skips attachments. I do not currently need this feature. 
 def extract_email_body(msg):
@@ -202,7 +202,7 @@ def home():
         email_body = render_template("/new-ticket-email.html", ticket=new_ticket)
 
         # Send the email with HTML format
-        send_email(email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
+        send_email(requestor_email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
         
         return redirect(url_for("home"))
     
