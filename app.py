@@ -117,8 +117,8 @@ def fetch_email_replies():
         mail.login(EMAIL_ACCOUNT, EMAIL_PASSWORD)  
         mail.select("inbox")  
 
-        status, messages = mail.search(None, "UNSEEN")  
-        if status != "OK":
+        mail_server_response_status, messages = mail.search(None, "UNSEEN")  
+        if mail_server_response_status != "OK":
             print("DEBUG - Reading Inbox via IMAP failed for an unknown reason.")
             return
 
@@ -127,8 +127,8 @@ def fetch_email_replies():
 
         for email_id in email_ids:
             email_id = email_id.decode()  # Ensure it's a string
-            status, msg_data = mail.fetch(email_id, "(RFC822)")
-            if status != "OK" or not msg_data:
+            mail_server_response_status, msg_data = mail.fetch(email_id, "(RFC822)")
+            if mail_server_response_status != "OK" or not msg_data:
                 print(f"ERROR - Unable to fetch email {email_id}")
                 continue  
 
@@ -165,7 +165,7 @@ def fetch_email_replies():
 def background_email_monitor():
     while True:
         fetch_email_replies()
-        time.sleep(300)  # Wait for  emails every 5 minutes.
+        time.sleep(300)  # Wait for emails every 5 minutes.
 
 threading.Thread(target=background_email_monitor, daemon=True).start()
 
@@ -174,19 +174,19 @@ threading.Thread(target=background_email_monitor, daemon=True).start()
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        ticket_subject = request.form["subject"]
-        ticket_message = request.form["message"]
-        request_type = request.form["type"]
+        requestor_name = request.form["requestor_name"]
+        requestor_email = request.form["requestor_email"]
+        ticket_subject = request.form["ticket_subject"]
+        ticket_message = request.form["ticket_message"]
+        request_type = request.form["request_type"]
         ticket_number = generate_ticket_number()
         
         new_ticket = {
             "ticket_number": ticket_number,
-            "requestor_name": name,
-            "requestor_email": email,
-            "subject": ticket_subject,
-            "message": ticket_message,
+            "requestor_name": requestor_name,
+            "requestor_email": requestor_email,
+            "ticket_subject": ticket_subject,
+            "ticket_message": ticket_message,
             "request_type": request_type,
             "ticket_status": "Open",
             "submission_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -195,6 +195,7 @@ def home():
         
         tickets = load_tickets()
         tickets.append(new_ticket)
+        print(f"INFO - a new {ticket_number} has been created")
         save_tickets(tickets)
         
         # Render the HTML email template
@@ -293,4 +294,4 @@ def logout():
     return redirect(url_for("login")) # Send a logged out user back to the login page. This can be customized.
 
 if __name__ == "__main__":
-    app.run(debug=True) #debug=True
+    app.run() #debug=True
