@@ -57,9 +57,9 @@ def generate_ticket_number():
     return f"TKT-{current_year}-{ticket_count}"  # Format: TKT-YYYY-XXXX
 
 # Send a confirmation email
-def send_email(to_email, subject, body, html=True):
+def send_email(to_email, ticket_subject, body, html=True):
     msg = MIMEMultipart()
-    msg["Subject"] = subject
+    msg["Subject"] = ticket_subject
     msg["From"] = EMAIL_ACCOUNT
     msg["To"] = to_email
     
