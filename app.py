@@ -212,8 +212,8 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
+        username = request.form["tech_username_box"]
+        password = request.form["tech_password_box"]
         employees = load_employees()  # Load list of technicians
 
         # Iterate through the list of employees to check for a match.
@@ -253,7 +253,7 @@ def ticket_detail(ticket_number):
     return "Ticket Number in the URL was not found.", 404
 
 ## Route/routine for updating a ticket. This is new and might get removed.
-@app.route("/ticket/<ticket_number>/update_status/<status>", methods=["POST"])
+@app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only logged-in techs can update tickets.
         return jsonify({"message": "Unauthorized"}), 403
