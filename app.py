@@ -1,22 +1,21 @@
 #!/usr/bin/env python3
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import json # My preffered method of "database" replacements.
-import smtplib # Outgoing Email
-import imaplib # Incoming Email
+import smtplib # Required protocol for sending emails by code.
+import imaplib # Required protocol for receiving/logging into email provider.
+import re # Regex support for reading emails and subject lines.
+import email # Required to read the content of the emails.
 import threading # Background process.
-import time # Only used to sleep the background thread.
-import re # Regex Support for Email Replies
-import os # Dotenv requirement
-import email
-from dotenv import load_dotenv
+import time # Used for script sleeping.
+import os # Required to load DOTENV
+from dotenv import load_dotenv # Dependant on OS module
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
 from email.header import decode_header
-from datetime import datetime
+from datetime import datetime # Timestamps on tickets.
 
 app = Flask(__name__)
 app.secret_key = "secretdemokey"
-# I attempted to leverage the dotenv file but had trouble. I experienced poor performance on an OCI E2.1.Micro using the secrets module.
 
 # Load environment variables from .env in the local folder.
 load_dotenv(dotenv_path=".env")
@@ -24,7 +23,7 @@ TICKETS_FILE = os.getenv("TICKETS_FILE")
 EMPLOYEE_FILE = os.getenv("EMPLOYEE_FILE")
 IMAP_SERVER = os.getenv("IMAP_SERVER") # Provider IMAP Server Address
 EMAIL_ACCOUNT = os.getenv("EMAIL_ACCOUNT") # SEND FROM Email Address/Username
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password - No OAuth or OAuth2 support yet.
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password
 SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
 SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
 
