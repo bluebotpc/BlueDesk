@@ -29,29 +29,29 @@ SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
 SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
 
 # Read/Loads the ticket file into memory.
-def load_tickets():
-    try:
-        with open(TICKETS_FILE, "r") as tkt_file:
-            return json.load(tkt_file)
-    except FileNotFoundError:
-        return [] # represents an empty list.
+#def load_tickets():
+#    try:
+#        with open(TICKETS_FILE, "r") as tkt_file:
+#            return json.load(tkt_file)
+#    except FileNotFoundError:
+#        return [] # represents an empty list.
 
-# def load_tickets(retries=5, delay=0.2):
-#     # Load tickets from JSON file with file locking and retry logic.
-#     for attempt in range(retries):
-#         try:
-#             with open(TICKETS_FILE, "r") as file:
-#                 fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
-#                 tickets = json.load(file)
-#                 fcntl.flock(file, fcntl.LOCK_UN)  # Unlock
-#                 return tickets
-#         except (json.JSONDecodeError, FileNotFoundError) as e:
-#             print(f"Error loading tickets: {e}")
-#             return []
-#         except BlockingIOError:
-#             print(f"File is locked, retrying... ({attempt+1}/{retries})")
-#             time.sleep(delay)  # Wait before retrying
-#     raise Exception("Failed to load tickets after multiple attempts.")
+def load_tickets(retries=5, delay=0.2):
+    # Load tickets from JSON file with file locking and retry logic.
+    for attempt in range(retries):
+        try:
+            with open(TICKETS_FILE, "r") as file:
+                fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
+                tickets = json.load(file)
+                fcntl.flock(file, fcntl.LOCK_UN)  # Unlock
+                return tickets
+        except (json.JSONDecodeError, FileNotFoundError) as e:
+            print(f"Error loading tickets: {e}")
+            return []
+        except BlockingIOError:
+            print(f"File is locked, retrying... ({attempt+1}/{retries})")
+            time.sleep(delay)  # Wait before retrying
+    raise Exception("Failed to load tickets after multiple attempts.")
 
 # Writes to the ticket file database.
 def save_tickets(tickets):
