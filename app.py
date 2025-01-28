@@ -216,7 +216,7 @@ def login():
         employees = load_employees()  # Load list of technicians
 
         # Iterate through the list of employees to check for a match.
-        # After adding this feature/function the simplified ability to only have one defined technician is broke. This should be resolved before production release.
+        # After adding this feae/turfunction the simplified ability to only have one defined technician is broke. This should be resolved before production release.
         for defined_technician in employees:
             if username == defined_technician["tech_username"] and password == defined_technician["tech_authcode"]:
                 session["technician"] = username  # Store the technician's username in the session cookie.
@@ -233,11 +233,11 @@ def dashboard():
         return redirect(url_for("login")) # Redirect them to the login page.
     
     tickets = load_tickets()
-    # Filtering out tickets with the Closed Status.
+    # Filtering out tickets with the Closed Status on the main Dashboard.
     open_tickets = [ticket for ticket in tickets if ticket["ticket_status"].lower() != "closed"]
     return render_template("dashboard.html", tickets=open_tickets)
 
-# Route/routine for viewing a ticket in raw json. This will work differently before production release v1.0.
+# Route/routine for viewing a ticket, loads into what I call Ticket Commander.
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
     if "technician" not in session:  # Validate logged-in user
@@ -251,7 +251,7 @@ def ticket_detail(ticket_number):
 
     return "Ticket Number in the URL was not found.", 404
 
-## Route/routine for updating a ticket. This is new and might get removed.
+# Route/routine for updating a ticket.
 @app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only logged-in techs can update tickets.
@@ -276,7 +276,7 @@ def close_ticket(ticket_number):
     if not session.get("technician"):  # Ensure only logged-in techs can close tickets.
         return jsonify({"message": "Unauthorized"}), 403
     
-    tickets = load_tickets() # Loads tickets.json into memory.
+    tickets = load_tickets()
     for ticket in tickets:
         if ticket["ticket_number"] == ticket_number: # Basic input validation.
             ticket["ticket_status"] = "Closed"
@@ -290,7 +290,7 @@ def close_ticket(ticket_number):
 @app.route("/logout")
 def logout():
     session.pop("technician", None)
-    return redirect(url_for("login")) # Send a logged out user back to the login page. This can be customized.
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run() #debug=True
