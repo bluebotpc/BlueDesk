@@ -7,8 +7,9 @@ import re # Regex support for reading emails and subject lines.
 import email # Required to read the content of the emails.
 import threading # Background process.
 import time # Used for script sleeping.
-import os # Required to load DOTENV
-import fcntl # Unix file locking
+import os # Required to load DOTENV files.
+import fcntl # Unix file locking support.
+# import msvcrt # Windows NT file locking support.
 from dotenv import load_dotenv # Dependant on OS module
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
@@ -28,7 +29,7 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password
 SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
 SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
 
-# Read/Loads the ticket file into memory.
+# Read/Loads the ticket file into memory. This is the original load_tickets function that works on Windows and Unix.
 #def load_tickets():
 #    try:
 #        with open(TICKETS_FILE, "r") as tkt_file:
@@ -66,14 +67,14 @@ def load_employees():
     except FileNotFoundError:
         return {} # represents an empty dictionary.
 
-# Generate a new ticket number
+# Generate a new ticket number.
 def generate_ticket_number():
     tickets = load_tickets() # Read/Load the tickets-db into memory.
     current_year = datetime.now().year  # Get the current year dynamically
     ticket_count = str(len(tickets) + 1).zfill(4)  # Zero-padded ticket count
     return f"TKT-{current_year}-{ticket_count}"  # Format: TKT-YYYY-XXXX
 
-# Send a confirmation email
+# Send a confirmation email.
 def send_email(requestor_email, ticket_subject, ticket_message, html=True):
     msg = MIMEMultipart()
     msg["Subject"] = ticket_subject
@@ -231,10 +232,10 @@ def login():
     if request.method == "POST":
         username = request.form["tech_username_box"]
         password = request.form["tech_password_box"]
-        employees = load_employees()  # Load list of technicians
+        employees = load_employees() # Load employees.
 
         # Iterate through the list of employees to check for a match.
-        # After adding this feae/turfunction the simplified ability to only have one defined technician is broke. This should be resolved before production release.
+        # After adding this feature/function the simplified ability to only have one defined technician is broke. This should be resolved before production release.
         for defined_technician in employees:
             if username == defined_technician["tech_username"] and password == defined_technician["tech_authcode"]:
                 session["technician"] = username  # Store the technician's username in the session cookie.
@@ -244,7 +245,7 @@ def login():
         
     return render_template("login.html")
 
-# Route/routine for the technician login process
+# Route/routine for the technician login process.
 @app.route("/dashboard")
 def dashboard():
     if not session.get("technician"): # If the local machine does not have a session token/cookie containing the 'technician' tag.
