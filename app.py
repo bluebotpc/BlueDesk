@@ -8,6 +8,7 @@ import email # Required to read the content of the emails.
 import threading # Background process.
 import time # Used for script sleeping.
 import os # Required to load DOTENV
+# import fcntl # Unix file locking
 from dotenv import load_dotenv # Dependant on OS module
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
@@ -34,6 +35,23 @@ def load_tickets():
             return json.load(tkt_file)
     except FileNotFoundError:
         return [] # represents an empty list.
+
+# def load_tickets(retries=5, delay=0.2):
+#     # Load tickets from JSON file with file locking and retry logic.
+#     for attempt in range(retries):
+#         try:
+#             with open(TICKETS_FILE, "r") as file:
+#                 fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
+#                 tickets = json.load(file)
+#                 fcntl.flock(file, fcntl.LOCK_UN)  # Unlock
+#                 return tickets
+#         except (json.JSONDecodeError, FileNotFoundError) as e:
+#             print(f"Error loading tickets: {e}")
+#             return []
+#         except BlockingIOError:
+#             print(f"File is locked, retrying... ({attempt+1}/{retries})")
+#             time.sleep(delay)  # Wait before retrying
+#     raise Exception("Failed to load tickets after multiple attempts.")
 
 # Writes to the ticket file database.
 def save_tickets(tickets):

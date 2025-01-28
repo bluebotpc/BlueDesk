@@ -23,7 +23,7 @@
             max-width: 800px;
             margin: 20px;
             padding: 20px;
-            border: 1px solid #ddd;
+            border: 2px solid #ddd;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
@@ -85,6 +85,20 @@
             color: #b7b7b7;
             margin-top: 20px;
         }
+        /* Dark Mode
+        body.dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }       
+        /* Adjust Other UI Elements 
+        .dark-mode .card {
+            background-color: #1e1e1e;
+            border-color: #333;
+        }
+        .dark-mode .btn {
+            background-color: #444;
+            color: #fff;
+        }*/
     </style>
 </head>
 <body>
@@ -117,11 +131,33 @@
 
             <button type="submit" class="submit-btn">Submit Ticket</button>
         </form>
-        <!-- I like this below the submit button, but this is very specific to me. May leave it commented out for now. -->
-        <!-- <a target="_blank" href="https://www.bluebotpc.com" rel="noopener noreferrer">Website</a> | 
-        <a target="_blank" href="https://discord.gg/jFr5JnTUZd" rel="noopener noreferrer">Discord</a> |
-        <a target="_blank" href="https://forms.gle/uiEjs79uYD2KcfxT9" rel="noopener noreferrer">Submit Feedback</a> -->
         <p class="footer-text">©2025 GoobyDesk, a <a href="https://www.bluebotpc.com/">BlueBotPC</a> platform. All rights reserved.</p>
     </div>
+
+<!-- BELOW IS THE IMPLENTATION OF DARK MODE IT WILL NEED TWEAKS-->
+    <!--<script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const darkModeToggle = document.getElementById("darkModeToggle");
+            const body = document.body;
+        
+            // Check local storage for theme preference
+            if (localStorage.getItem("darkMode") === "enabled") {
+                body.classList.add("dark-mode");
+                darkModeToggle.textContent = "☀️ Light Mode";
+            }
+        
+            darkModeToggle.addEventListener("click", function () {
+                if (body.classList.contains("dark-mode")) {
+                    body.classList.remove("dark-mode");
+                    localStorage.setItem("darkMode", "disabled");
+                    darkModeToggle.textContent = "🌙 Dark Mode";
+                } else {
+                    body.classList.add("dark-mode");
+                    localStorage.setItem("darkMode", "enabled");
+                    darkModeToggle.textContent = "☀️ Light Mode";
+                }
+            });
+        });
+        </script> -->
 </body>
 </html>
