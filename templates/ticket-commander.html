@@ -54,7 +54,7 @@
         }
 
         .status-btn {
-            background-color: #284389;
+            background-color: green;
             color: #fff;
             font-size: 16px;
             padding: 10px;
@@ -69,6 +69,21 @@
             background-color: #1f356b;
         }
 
+        .close-tkt-btn {
+            background-color: red;
+            color: #fff;
+            font-size: 16px;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 48%;
+        }
+        .close-tkt-btn:hover {
+        background-color: #1f356b;
+        }
+
         .footer-text {
             font-size: 12px;
             color: #b7b7b7;
@@ -79,7 +94,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="static\bbpc_logo_color.webp" alt="BlueBotPC Logo">
+            <img src="https://mattfaulkner.us-southeast-1.linodeobjects.com/bbpc_logo_color.webp" alt="BlueBotPC Logo">
         </div>
         <h2>GoobyDesk - Ticket Commander</h2>
 
@@ -95,7 +110,7 @@
 
         <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'In-Progress')">Mark In-Progress</button>
 
-        <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Close Ticket</button>
+        <button class="close-tkt-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Close Ticket</button>
         
         <script>
             function updateTicketStatus(ticketId, newStatus) {

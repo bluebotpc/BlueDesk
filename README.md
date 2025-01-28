@@ -2,7 +2,7 @@
 
 Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and One Man MSPs.
 
-**Current Version:**  v0.2.3
+**Current Version:**  v0.3.0
 
 [GoobyDesk Repo Wiki](https://github.com/GoobyFRS/GoobyDesk/wiki) & [Production Deployment Guide](https://github.com/GoobyFRS/GoobyDesk/wiki/Production-Deployment-Guide) you can find information on my code standards, my variables, and other data I think is important for an open source project to be successful after the creator moves on.
 
@@ -32,7 +32,7 @@ Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and O
 
 ## Goals and Roadmap to Production v1.0
 
-- File locking and retry support.
+- File locking and retry support on Windows
 - Implement standardized ```/var/log/goobydesk``` logging.
 
 ### Linux Project Setup

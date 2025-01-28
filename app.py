@@ -1,22 +1,23 @@
 #!/usr/bin/env python3
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 import json # My preffered method of "database" replacements.
-import smtplib # Outgoing Email
-import imaplib # Incoming Email
+import smtplib # Required protocol for sending emails by code.
+import imaplib # Required protocol for receiving/logging into email provider.
+import re # Regex support for reading emails and subject lines.
+import email # Required to read the content of the emails.
 import threading # Background process.
-import time # Only used to sleep the background thread.
-import re # Regex Support for Email Replies
-import os # Dotenv requirement
-import email
-from dotenv import load_dotenv
+import time # Used for script sleeping.
+import os # Required to load DOTENV files.
+import fcntl # Unix file locking support.
+# import msvcrt # Windows NT file locking support.
+from dotenv import load_dotenv # Dependant on OS module
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
 from email.header import decode_header
-from datetime import datetime
+from datetime import datetime # Timestamps on tickets.
 
 app = Flask(__name__)
 app.secret_key = "secretdemokey"
-# I attempted to leverage the dotenv file but had trouble. I experienced poor performance on an OCI E2.1.Micro using the secrets module.
 
 # Load environment variables from .env in the local folder.
 load_dotenv(dotenv_path=".env")
@@ -24,17 +25,34 @@ TICKETS_FILE = os.getenv("TICKETS_FILE")
 EMPLOYEE_FILE = os.getenv("EMPLOYEE_FILE")
 IMAP_SERVER = os.getenv("IMAP_SERVER") # Provider IMAP Server Address
 EMAIL_ACCOUNT = os.getenv("EMAIL_ACCOUNT") # SEND FROM Email Address/Username
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password - No OAuth or OAuth2 support yet.
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password
 SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
 SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
 
-# Read/Loads the ticket file into memory.
-def load_tickets():
-    try:
-        with open(TICKETS_FILE, "r") as tkt_file:
-            return json.load(tkt_file)
-    except FileNotFoundError:
-        return [] # represents an empty list.
+# Read/Loads the ticket file into memory. This is the original load_tickets function that works on Windows and Unix.
+#def load_tickets():
+#    try:
+#        with open(TICKETS_FILE, "r") as tkt_file:
+#            return json.load(tkt_file)
+#    except FileNotFoundError:
+#        return [] # represents an empty list.
+
+def load_tickets(retries=5, delay=0.2):
+    # Load tickets from JSON file with file locking and retry logic.
+    for attempt in range(retries):
+        try:
+            with open(TICKETS_FILE, "r") as file:
+                fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
+                tickets = json.load(file)
+                fcntl.flock(file, fcntl.LOCK_UN)  # Unlock
+                return tickets
+        except (json.JSONDecodeError, FileNotFoundError) as e:
+            print(f"Error loading tickets: {e}")
+            return []
+        except BlockingIOError:
+            print(f"File is locked, retrying... ({attempt+1}/{retries})")
+            time.sleep(delay)  # Wait before retrying
+    raise Exception("Failed to load tickets after multiple attempts.")
 
 # Writes to the ticket file database.
 def save_tickets(tickets):
@@ -49,14 +67,14 @@ def load_employees():
     except FileNotFoundError:
         return {} # represents an empty dictionary.
 
-# Generate a new ticket number
+# Generate a new ticket number.
 def generate_ticket_number():
     tickets = load_tickets() # Read/Load the tickets-db into memory.
     current_year = datetime.now().year  # Get the current year dynamically
     ticket_count = str(len(tickets) + 1).zfill(4)  # Zero-padded ticket count
     return f"TKT-{current_year}-{ticket_count}"  # Format: TKT-YYYY-XXXX
 
-# Send a confirmation email
+# Send a confirmation email.
 def send_email(requestor_email, ticket_subject, ticket_message, html=True):
     msg = MIMEMultipart()
     msg["Subject"] = ticket_subject
@@ -214,7 +232,7 @@ def login():
     if request.method == "POST":
         username = request.form["tech_username_box"]
         password = request.form["tech_password_box"]
-        employees = load_employees()  # Load list of technicians
+        employees = load_employees() # Load employees.
 
         # Iterate through the list of employees to check for a match.
         # After adding this feature/function the simplified ability to only have one defined technician is broke. This should be resolved before production release.
@@ -227,18 +245,18 @@ def login():
         
     return render_template("login.html")
 
-# Route/routine for the technician login process
+# Route/routine for the technician login process.
 @app.route("/dashboard")
 def dashboard():
     if not session.get("technician"): # If the local machine does not have a session token/cookie containing the 'technician' tag.
         return redirect(url_for("login")) # Redirect them to the login page.
     
     tickets = load_tickets()
-    # Filtering out tickets with the Closed Status.
+    # Filtering out tickets with the Closed Status on the main Dashboard.
     open_tickets = [ticket for ticket in tickets if ticket["ticket_status"].lower() != "closed"]
     return render_template("dashboard.html", tickets=open_tickets)
 
-# Route/routine for viewing a ticket in raw json. This will work differently before production release v1.0.
+# Route/routine for viewing a ticket, loads into what I call Ticket Commander.
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
     if "technician" not in session:  # Validate logged-in user
@@ -252,7 +270,7 @@ def ticket_detail(ticket_number):
 
     return "Ticket Number in the URL was not found.", 404
 
-## Route/routine for updating a ticket. This is new and might get removed.
+# Route/routine for updating a ticket.
 @app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only logged-in techs can update tickets.
@@ -277,7 +295,7 @@ def close_ticket(ticket_number):
     if not session.get("technician"):  # Ensure only logged-in techs can close tickets.
         return jsonify({"message": "Unauthorized"}), 403
     
-    tickets = load_tickets() # Loads tickets.json into memory.
+    tickets = load_tickets()
     for ticket in tickets:
         if ticket["ticket_number"] == ticket_number: # Basic input validation.
             ticket["ticket_status"] = "Closed"
@@ -291,7 +309,7 @@ def close_ticket(ticket_number):
 @app.route("/logout")
 def logout():
     session.pop("technician", None)
-    return redirect(url_for("login")) # Send a logged out user back to the login page. This can be customized.
+    return redirect(url_for("login"))
 
 if __name__ == "__main__":
     app.run() #debug=True

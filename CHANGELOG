@@ -1,5 +1,7 @@
 # CHANGELOG
 
+**Jan.28.2025-1:** File locking support on Unix systems. File locking support on Windows will be implemented prior to Production v1.0. Ticket-Commander pages now have minor responsiveness with some button colors.
+
 **Jan.24.2025-2:** Resolved minor bugs and unexpected ticket-commander behavior.
 
 **Jan.24.2025-1:** Ticket Commander/Ticket View implemented but it is buggy.
