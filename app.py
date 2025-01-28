@@ -8,7 +8,7 @@ import email # Required to read the content of the emails.
 import threading # Background process.
 import time # Used for script sleeping.
 import os # Required to load DOTENV
-# import fcntl # Unix file locking
+import fcntl # Unix file locking
 from dotenv import load_dotenv # Dependant on OS module
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
