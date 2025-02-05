@@ -94,7 +94,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="https://mattfaulkner.us-southeast-1.linodeobjects.com/bbpc_logo_color.webp" alt="BlueBotPC Logo">
+            <img src="https://mattfaulkner.us-southeast-1.linodeobjects.com/GoobyDesk-color.webp" alt="GoobyDesk Logo">
         </div>
         <h2>GoobyDesk - Ticket Commander</h2>
 
@@ -119,7 +119,7 @@
                 return;
     }
 
-    fetch(`/ticket/${ticketId}/update_status/${newStatus}`, {  // Updated path
+    fetch(`/ticket/${ticketId}/update_status/${newStatus}`, {  // Updated path /ticket/<ticket_number>/update_status/<ticket_status>
         method: "POST"
     })
     .then(response => response.json())
