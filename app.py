@@ -44,15 +44,15 @@ def load_tickets(retries=5, delay=0.2):
             with open(TICKETS_FILE, "r") as file:
                 fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
                 tickets = json.load(file)
-                fcntl.flock(file, fcntl.LOCK_UN)  # Unlock
+                fcntl.flock(file, fcntl.LOCK_UN)  # Unlock the file.
                 return tickets
         except (json.JSONDecodeError, FileNotFoundError) as e:
-            print(f"Error loading tickets: {e}")
+            print(f"ERROR - Error loading tickets: {e}")
             return []
         except BlockingIOError:
-            print(f"File is locked, retrying... ({attempt+1}/{retries})")
+            print(f"DEBUG - File is locked, retrying... ({attempt+1}/{retries})")
             time.sleep(delay)  # Wait before retrying
-    raise Exception("Failed to load tickets after multiple attempts.")
+    raise Exception("ERROR - Failed to load tickets after multiple attempts.")
 
 # Writes to the ticket file database.
 def save_tickets(tickets):
@@ -112,19 +112,19 @@ def extract_email_body(msg):
                 try:
                     body = part.get_payload(decode=True).decode(errors="ignore").strip()
                 except Exception as e:
-                    print(f"Error decoding email part: {e}")
+                    print(f"ERROR - Error decoding email part: {e}")
                     continue
             elif content_type == "text/html" and not body:
                 try:
                     body = part.get_payload(decode=True).decode(errors="ignore").strip()
                 except Exception as e:
-                    print(f"Error decoding HTML part: {e}")
+                    print(f"ERROR - Error decoding HTML part: {e}")
                     continue
     else:
         try:
             body = msg.get_payload(decode=True).decode(errors="ignore").strip()
         except Exception as e:
-            print(f"Error decoding single-part email: {e}")
+            print(f"ERROR - Error decoding single-part email: {e}")
 
     return body
 
@@ -241,7 +241,7 @@ def login():
                 session["technician"] = username  # Store the technician's username in the session cookie.
                 return redirect(url_for("dashboard"))
             else:
-                return jsonify({"message": f"Technician Authentication Failed."}), 404
+                return render_template("404.html"), 404
         
     return render_template("login.html")
 
@@ -260,7 +260,7 @@ def dashboard():
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
     if "technician" not in session:  # Validate logged-in user
-        return "Forbidden: Unauthorized Access", 403  # Return a 403 page
+        return render_template("403.html"), 403  # Return a 403 page
 
     tickets = load_tickets()
     ticket = next((t for t in tickets if t["ticket_number"] == ticket_number), None)
@@ -268,13 +268,13 @@ def ticket_detail(ticket_number):
     if ticket:
         return render_template("ticket-commander.html", ticket=ticket)
 
-    return "Ticket Number in the URL was not found.", 404
+    return render_template("404.html"), 404
 
 # Route/routine for updating a ticket.
 @app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only logged-in techs can update tickets.
-        return jsonify({"message": "Unauthorized"}), 403
+        return render_template("403.html"), 403
     
     valid_statuses = ["Open", "In-Progress", "Closed"]
     if ticket_status not in valid_statuses:
@@ -287,13 +287,13 @@ def update_ticket_status(ticket_number, ticket_status):
             save_tickets(tickets)  # Save changes
             return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."})
         
-    return jsonify({"message": "Ticket not found"}), 404
+    return render_template("404.html"), 404
 
 # Route/routine to close a ticket. This invloves a write operation to the tickets.json file.
 @app.route("/close_ticket/<ticket_number>", methods=["POST"])
 def close_ticket(ticket_number):
     if not session.get("technician"):  # Ensure only logged-in techs can close tickets.
-        return jsonify({"message": "Unauthorized"}), 403
+        return render_template("403.html"), 403
     
     tickets = load_tickets()
     for ticket in tickets:
@@ -303,13 +303,24 @@ def close_ticket(ticket_number):
             return jsonify({"message": f"Ticket {ticket_number} has been closed."})
         
     # If the ticket was not found....
-    return jsonify({"message": "Ticket not found"}), 404
+    return render_template("404.html"), 404
 
 # Removes the session cookie from the user browser, sending the Technician/user back to the login page.
 @app.route("/logout")
 def logout():
     session.pop("technician", None)
     return redirect(url_for("login"))
+
+# BELOW THIS LINE IS RESERVED FOR FLASK ERROR ROUTES. PUT ALL CORE APP FUNCTIONS ABOVE THIS LINE!
+# Handle 404 errors.
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
+
+#Handle 403 errors.
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template("403.html"), 403
 
 if __name__ == "__main__":
     app.run() #debug=True
