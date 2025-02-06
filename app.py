@@ -284,15 +284,15 @@ def update_ticket_status(ticket_number, ticket_status):
     for ticket in tickets:
         if ticket["ticket_number"] == ticket_number: 
             ticket["ticket_status"] = ticket_status  
-            save_tickets(tickets)  # Save changes
-            return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."})
+            save_tickets(tickets)  # Save the changes to the tickets.
+            return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."}) # Browser prompt on successful status update.
         
     return render_template("404.html"), 404
 
 # Route/routine to close a ticket. This invloves a write operation to the tickets.json file.
 @app.route("/close_ticket/<ticket_number>", methods=["POST"])
 def close_ticket(ticket_number):
-    if not session.get("technician"):  # Ensure only logged-in techs can close tickets.
+    if not session.get("technician"):  # Check the cookie for technician tag.
         return render_template("403.html"), 403
     
     tickets = load_tickets()

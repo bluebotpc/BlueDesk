@@ -61,15 +61,15 @@ CTRL+C to break. ```deactivate``` to clean up.
 
 #### Landing Page
 
-![LandingPage-GHWiki](https://github.com/user-attachments/assets/66267c63-5d02-4802-ac4b-32c67c8735cd)
+![Index-GHWiki](https://github.com/user-attachments/assets/6dfde191-1c8f-4c15-8c72-5544f06d17a9)
 
 #### Login
 
-![Login-GHWiki](https://github.com/user-attachments/assets/a9c86ea6-710c-468a-bd8d-6ab7020cdcb5)
+![Login-GHWiki](https://github.com/user-attachments/assets/0d538988-e36a-4cdb-9126-bd93c1f9aa53)
 
 #### Dashboard
 
-![Dashboard-GHWiki](https://github.com/user-attachments/assets/30b21d8f-e5cd-4713-a2b2-26f958db29e5)
+![Dashboard-GHWiki](https://github.com/user-attachments/assets/b72367bd-b2f5-47bf-8b18-6e56f0a7bbe3)
 
 #### Confirmation Email Template
 
@@ -77,4 +77,4 @@ CTRL+C to break. ```deactivate``` to clean up.
 
 #### Ticket Commander
 
-![TicketCommander-GHWiki](https://github.com/user-attachments/assets/0d7f315f-e542-4cad-8632-985d06476fa4)
+![TktCommander-GHWiki](https://github.com/user-attachments/assets/2d08aa6d-35b7-44f3-8381-3d4983aee59b)

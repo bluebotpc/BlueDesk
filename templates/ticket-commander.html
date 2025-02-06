@@ -111,25 +111,25 @@
         <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'In-Progress')">Mark In-Progress</button>
 
         <button class="close-tkt-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Close Ticket</button>
-        
+        <!-- By keeping this script near the bottom of the page, this ensures all attributes load first.-->
         <script>
             function updateTicketStatus(ticketId, newStatus) {
                 if (!ticketId) {
                     alert("Ticket Number was NOT found. Try again.");
-                return;
-    }
-
-    fetch(`/ticket/${ticketId}/update_status/${newStatus}`, {  // Updated path /ticket/<ticket_number>/update_status/<ticket_status>
-        method: "POST"
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert(data.message);
-        location.reload();  // Refresh dashboard after update
-    })
-    .catch(error => console.error("Error:", error));
-}
-        </script>        
+                    return;  // Proper indentation
+                }
+        
+                fetch(`/ticket/${ticketId}/update_status/${newStatus}`, {  
+                    method: "POST"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    location.reload();  // Refresh page after update
+                })
+                .catch(error => console.error("Error:", error));
+            }
+        </script>
 
     <p class="footer-text">©2025 GoobyDesk, a <a href="https://www.bluebotpc.com/">BlueBotPC</a> platform. All rights reserved.</p>
     </div>
