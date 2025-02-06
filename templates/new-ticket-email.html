@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta name="author" content="Matt Faulkner">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <style>
     body {
@@ -12,12 +13,11 @@
     }
 
     #hidden-message {
-      display: none;
-      overflow: hidden;
+      font-size: 1px;
+      color: #ffffff;
       line-height: 1px;
-      opacity: 0;
       max-height: 0;
-      max-width: 0;
+      visibility: hidden;
     }
 
     table {
@@ -74,22 +74,28 @@
   </style>
 </head>
 <body>
-  <div id="hidden-message">New Ticket Created<div></div></div>
-  <table role="presentation" border="0" cellSpacing="0" cellPadding="0" class="container">
+  <center>
+    <div id="hidden-message">New Ticket Created</div>
+    <table class="container" role="presentation" border="0" cellspacing="0" cellpadding="0">
+  </center>
     <tr>
       <td>
-        <table align="center" border="0" cellPadding="0" cellSpacing="0" role="presentation" width="100%">
+        <table role="presentation" border="0" cellspacing="0" cellpadding="0" width="100%">
           <tr>
             <td class="logo">
-              <img src="https://mattfaulkner.us-southeast-1.linodeobjects.com/GoobyDesk-color.webp" width="200" height="90" alt="GoobyDesk Logo"/>
+              <img src="https://mattfaulkner.us-southeast-1.linodeobjects.com/GoobyDesk-color.webp" 
+                width="200" height="90" alt="GoobyDesk Logo"
+                style="display: block; max-width: 100%; height: auto;">
             </td>
           </tr>
         </table>
 
-        <h1>Ticket Created: {{ticket.ticket_number}}</h1>
+      <h1 style="font-family: Arial, sans-serif; color: #284389; font-size: 16px; font-weight: bold; line-height: 42px;">
+        Ticket Created: {{ticket.ticket_number}}
+      </h1>
         <p>Howdy Customer! <br>Your BlueBotPC Service Desk Ticket {{ticket.ticket_number}} has been created. It has a status of {{ticket.ticket_status}}. You provided the following details... {{ticket.ticket_message}}.<br>A Technician will contact you shortly.</p>
         <p class="small-text">Respectfully,<br>BlueBotPC Service Desk</p>
-        <table align="center" border="0" cellPadding="0" cellSpacing="0" role="presentation" width="100%">
+        <table role="presentation" border="0" cellspacing="0" cellpadding="0">
           <tr>
             <td>
               <a target="_blank" href="https://www.bluebotpc.com" rel="noopener noreferrer">Website</a> | 
@@ -99,8 +105,8 @@
                 This was an automated message sent by the BlueBotPC Service Desk. If you are not the intended recipient, please let us know and we will ensure you are not contacted by our system again. 
               </p>
               <p class="footer-text" style="margin-bottom: 50px;">
-              ©2025 GoobyDesk, a <a href="https://www.bluebotpc.com/">BlueBotPC</a> platform. All rights reserved.</p>
-              </p>
+              ©2025 GoobyDesk, a <a href="https://www.bluebotpc.com/">BlueBotPC</a> platform. All rights reserved.
+            </p>
             </td>
           </tr>
         </table>
