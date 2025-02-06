@@ -32,8 +32,8 @@ Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and O
 
 ## Goals and Roadmap to Production v1.0
 
-- File locking and retry support on Windows
-- Implement standardized ```/var/log/goobydesk``` logging.
+- File locking and retry support on Windows. (CONSIDERING DROPPING)
+- Implement standardized ```/var/log/goobydesk``` logging. (CONSIDERING DROPPING)
 
 ### Linux Project Setup
 
