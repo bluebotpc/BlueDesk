@@ -230,18 +230,18 @@ def home():
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        username = request.form["tech_username_box"]
+        username = request.form["tech_username_box"] # query from HTML form name.
         password = request.form["tech_password_box"]
-        employees = load_employees() # Load employees.
+        employees = load_employees() # Loads the employee data into memory.
 
         # Iterate through the list of employees to check for a match.
         # After adding this feature/function the simplified ability to only have one defined technician is broke. This should be resolved before production release.
         for defined_technician in employees:
             if username == defined_technician["tech_username"] and password == defined_technician["tech_authcode"]:
                 session["technician"] = username  # Store the technician's username in the session cookie.
-                return redirect(url_for("dashboard"))
+                return redirect(url_for("dashboard")) # On successful login, send to Dashboard.
             else:
-                return render_template("404.html"), 404
+                return render_template("404.html"), 404 # Failure sends to 404. This could be tweaked.
         
     return render_template("login.html")
 
@@ -259,8 +259,8 @@ def dashboard():
 # Route/routine for viewing a ticket, loads into what I call Ticket Commander.
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
-    if "technician" not in session:  # Validate logged-in user
-        return render_template("403.html"), 403  # Return a 403 page
+    if "technician" not in session:  # Validate the logged-in user cookie...
+        return render_template("403.html"), 403  # Return a custom HTTP 403 page.
 
     tickets = load_tickets()
     ticket = next((t for t in tickets if t["ticket_number"] == ticket_number), None)
@@ -268,19 +268,19 @@ def ticket_detail(ticket_number):
     if ticket:
         return render_template("ticket-commander.html", ticket=ticket)
 
-    return render_template("404.html"), 404
+    return render_template("404.html"), 404 # Return a custom HTTP 404 page.
 
 # Route/routine for updating a ticket.
 @app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
-    if not session.get("technician"):  # Ensure only logged-in techs can update tickets.
-        return render_template("403.html"), 403
+    if not session.get("technician"):  # Ensure only authenticated techs can update tickets.
+        return render_template("403.html"), 403 # Otherwise, custom 403 error.
     
     valid_statuses = ["Open", "In-Progress", "Closed"]
     if ticket_status not in valid_statuses:
-        return jsonify({"message": "Invalid status provided"}), 400
+        return render_template("400.html"), 400 # Return HTTP 400 but this may change.
 
-    tickets = load_tickets()  # Load tickets.json
+    tickets = load_tickets()  # Loads tickets into memory.
     for ticket in tickets:
         if ticket["ticket_number"] == ticket_number: 
             ticket["ticket_status"] = ticket_status  
@@ -300,7 +300,7 @@ def close_ticket(ticket_number):
         if ticket["ticket_number"] == ticket_number: # Basic input validation.
             ticket["ticket_status"] = "Closed"
             save_tickets(tickets)
-            return jsonify({"message": f"Ticket {ticket_number} has been closed."})
+            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # Browser Popup.
         
     # If the ticket was not found....
     return render_template("404.html"), 404
@@ -312,15 +312,20 @@ def logout():
     return redirect(url_for("login"))
 
 # BELOW THIS LINE IS RESERVED FOR FLASK ERROR ROUTES. PUT ALL CORE APP FUNCTIONS ABOVE THIS LINE!
+# Handle 400 errors.
+@app.errorhandler(400)
+def bad_request(e):
+    return render_template("400.html"), 400
+
+# Handle 403 errors.
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template("403.html"), 403
+
 # Handle 404 errors.
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template("404.html"), 404
-
-#Handle 403 errors.
-@app.errorhandler(403)
-def forbidden(e):
-    return render_template("403.html"), 403
 
 if __name__ == "__main__":
     app.run() #debug=True
