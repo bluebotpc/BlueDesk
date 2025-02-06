@@ -1,5 +1,9 @@
 # CHANGELOG
 
+**Feb.5.2025-3:** HTML5 adjustments suggested by the ChatGPT when asked how to follow HTML5 standard best practices. 
+
+**Feb.5.2025-2:** Custom 400, 403, and 404s implemented. JavaScript was cleaned up with help from ChatGPT. Additional code notes.
+
 **Feb.5.2025-1:** Official GoobyDesk project branding implemented. Personal branding removed.
 
 **Jan.28.2025-1:** File locking support on Unix systems. File locking support on Windows will be implemented prior to Production v1.0. Ticket-Commander pages now have minor responsiveness with some button colors.
