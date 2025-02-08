@@ -45,7 +45,7 @@ def send_discord_notification(ticket_number, ticket_message):
         print(f"ERROR - WEBHOOK HANDLER - Unexpected error: {e}")
 
 # Uncalled function for TktClosed notifications to be added into a TicketCommander workflow.
-def send_TktClosed_discord_notification(ticket_number):
+def send_TktClosed_discord_notification(ticket_number, ticket_status):
     if not DISCORD_WEBHOOK_URL:
         print("ERROR - WEBHOOK HANDLER - DISCORD_WEBHOOK_URL is not set. Check your .env file.")
         return
@@ -55,7 +55,7 @@ def send_TktClosed_discord_notification(ticket_number):
         
         "embeds": [
             {
-                "title": f"A ticket has been closed: {ticket_number}",
+                "title": f"Ticket {ticket_number} updated to {ticket_status}.",
                 "color": 16776960,  # Yellow # decimal representation of a hexadecimal color code
             }
         ]

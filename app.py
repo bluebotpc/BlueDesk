@@ -296,7 +296,7 @@ def update_ticket_status(ticket_number, ticket_status):
         if ticket["ticket_number"] == ticket_number: 
             ticket["ticket_status"] = ticket_status  
             save_tickets(tickets)  # Save the changes to the tickets.
-            send_TktClosed_discord_notification(ticket_number) # Discord notification for closing a ticket.
+            send_TktClosed_discord_notification(ticket_number, ticket_status) # Discord notification for closing a ticket.
             return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."}) # Browser prompt on successful status update.
         
     return render_template("404.html"), 404
