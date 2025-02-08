@@ -16,11 +16,12 @@ def send_discord_notification(ticket_number, ticket_message):
     
     data = {
         "username": "GoobyDesk",
+        
         "embeds": [
             {
                 "title": f"New Ticket Created: {ticket_number}",
                 "description": f"**Details:** {ticket_message}",
-                "color": 5814783,  # Blue color
+                "color": 5814783,  # Some blue color, not sure what this value is actually based on.
             }
         ]
     }

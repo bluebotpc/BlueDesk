@@ -199,6 +199,8 @@ def home():
         requestor_email = request.form["requestor_email"]
         ticket_subject = request.form["ticket_subject"]
         ticket_message = request.form["ticket_message"]
+        ticket_impact = request.form["ticket_impact"]
+        ticket_urgency = request.form["ticket_urgency"]
         request_type = request.form["request_type"]
         ticket_number = generate_ticket_number()
         
@@ -209,6 +211,8 @@ def home():
             "ticket_subject": ticket_subject,
             "ticket_message": ticket_message,
             "request_type": request_type,
+            "ticket_impact": ticket_impact,
+            "ticket_urgency": ticket_urgency,
             "ticket_status": "Open",
             "submission_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "ticket_notes": []
