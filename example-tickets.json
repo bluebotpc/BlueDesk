@@ -6,8 +6,10 @@
         "ticket_subject": "First Ticket",
         "ticket_message": "Can you help me with my computer issue?",
         "request_type": "Request",
+        "ticket_impact": "Low Impact",
+        "ticket_urgency": "Panning",
         "ticket_status": "Open",
-        "submission_date": "2025-01-02 10:00:30",
-        "ticket_notes": []
+        "submission_date": "2025-02-08 08:51:40",
+        "ticket_notes": [] 
     }
 ]

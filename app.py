@@ -9,12 +9,13 @@ import threading # Background process.
 import time # Used for script sleeping.
 import os # Required to load DOTENV files.
 import fcntl # Unix file locking support.
-# import msvcrt # Windows NT file locking support.
 from dotenv import load_dotenv # Dependant on OS module
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
 from email.header import decode_header
 from datetime import datetime # Timestamps on tickets.
+from local_webhook_handler import send_discord_notification # Webhook handler, local to this repo.
+from local_webhook_handler import send_TktClosed_discord_notification # I need to find a better way to handle this import but I learned this new thing!
 
 app = Flask(__name__)
 app.secret_key = "secretdemokey"
@@ -28,6 +29,7 @@ EMAIL_ACCOUNT = os.getenv("EMAIL_ACCOUNT") # SEND FROM Email Address/Username
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password
 SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
 SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
 # Read/Loads the ticket file into memory. This is the original load_tickets function that works on Windows and Unix.
 #def load_tickets():
@@ -36,23 +38,25 @@ SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/5
 #            return json.load(tkt_file)
 #    except FileNotFoundError:
 #        return [] # represents an empty list.
-
+#
+# This load_tickets function contains the file locking mechanism for Linux.
+ 
 def load_tickets(retries=5, delay=0.2):
-    # Load tickets from JSON file with file locking and retry logic.
-    for attempt in range(retries):
-        try:
-            with open(TICKETS_FILE, "r") as file:
-                fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
-                tickets = json.load(file)
-                fcntl.flock(file, fcntl.LOCK_UN)  # Unlock the file.
-                return tickets
-        except (json.JSONDecodeError, FileNotFoundError) as e:
-            print(f"ERROR - Error loading tickets: {e}")
-            return []
-        except BlockingIOError:
-            print(f"DEBUG - File is locked, retrying... ({attempt+1}/{retries})")
-            time.sleep(delay)  # Wait before retrying
-    raise Exception("ERROR - Failed to load tickets after multiple attempts.")
+   # Load tickets from JSON file with file locking and retry logic.
+   for attempt in range(retries):
+       try:
+           with open(TICKETS_FILE, "r") as file:
+               fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
+               tickets = json.load(file)
+               fcntl.flock(file, fcntl.LOCK_UN)  # Unlock the file.
+               return tickets
+       except (json.JSONDecodeError, FileNotFoundError) as e:
+           print(f"ERROR - Error loading tickets: {e}")
+           return []
+       except BlockingIOError:
+           print(f"DEBUG - File is locked, retrying... ({attempt+1}/{retries})")
+           time.sleep(delay)  # Wait before retrying
+   raise Exception("ERROR - Failed to load tickets after multiple attempts.")
 
 # Writes to the ticket file database.
 def save_tickets(tickets):
@@ -196,6 +200,8 @@ def home():
         requestor_email = request.form["requestor_email"]
         ticket_subject = request.form["ticket_subject"]
         ticket_message = request.form["ticket_message"]
+        ticket_impact = request.form["ticket_impact"]
+        ticket_urgency = request.form["ticket_urgency"]
         request_type = request.form["request_type"]
         ticket_number = generate_ticket_number()
         
@@ -206,6 +212,8 @@ def home():
             "ticket_subject": ticket_subject,
             "ticket_message": ticket_message,
             "request_type": request_type,
+            "ticket_impact": ticket_impact,
+            "ticket_urgency": ticket_urgency,
             "ticket_status": "Open",
             "submission_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "ticket_notes": []
@@ -221,6 +229,9 @@ def home():
 
         # Send the email with HTML format
         send_email(requestor_email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
+
+        # Send a Discord webhook notification.
+        send_discord_notification(ticket_number, ticket_message)
         
         return redirect(url_for("home"))
     
@@ -270,7 +281,7 @@ def ticket_detail(ticket_number):
 
     return render_template("404.html"), 404 # Return a custom HTTP 404 page.
 
-# Route/routine for updating a ticket.
+# Route/routine for updating a ticket from Ticket Commander. Not called by the main technician dashboard.
 @app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only authenticated techs can update tickets.
@@ -285,11 +296,13 @@ def update_ticket_status(ticket_number, ticket_status):
         if ticket["ticket_number"] == ticket_number: 
             ticket["ticket_status"] = ticket_status  
             save_tickets(tickets)  # Save the changes to the tickets.
+            send_TktClosed_discord_notification(ticket_number, ticket_status) # Discord notification for closing a ticket.
             return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."}) # Browser prompt on successful status update.
         
     return render_template("404.html"), 404
 
-# Route/routine to close a ticket. This invloves a write operation to the tickets.json file.
+# Route/routine to close a ticket from the main technician dashboard. Not called from Ticket Commander.
+# Even if I refactor the dashboard to use the other endpoint, this is a good API endpoint to leave open for POST methods.
 @app.route("/close_ticket/<ticket_number>", methods=["POST"])
 def close_ticket(ticket_number):
     if not session.get("technician"):  # Check the cookie for technician tag.
@@ -300,7 +313,8 @@ def close_ticket(ticket_number):
         if ticket["ticket_number"] == ticket_number: # Basic input validation.
             ticket["ticket_status"] = "Closed"
             save_tickets(tickets)
-            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # Browser Popup.
+            send_TktClosed_discord_notification(ticket_number) # Discord notification for closing a ticket.
+            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # Browser Popup to confirm ticket closure.
         
     # If the ticket was not found....
     return render_template("404.html"), 404

@@ -1,6 +1,8 @@
 # CHANGELOG
 
-**Feb.5.2025-3:** HTML5 adjustments suggested by the ChatGPT when asked how to follow HTML5 standard best practices. 
+**Feb.X.2025-1:** Implementing support for Discord webhook notifications.
+
+**Feb.5.2025-3:** HTML5 adjustments suggested by the ChatGPT when asked how to follow HTML5 standard best practices.
 
 **Feb.5.2025-2:** Custom 400, 403, and 404s implemented. JavaScript was cleaned up with help from ChatGPT. Additional code notes.
 

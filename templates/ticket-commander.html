@@ -105,13 +105,14 @@
             <p><strong>Submitted By:</strong> {{ ticket.requestor_name }} ({{ ticket.requestor_email }})</p>
             <p><strong>Subject:</strong> {{ ticket.ticket_subject }}</p>
             <p><strong>Type:</strong> {{ ticket.request_type }}</p>
+            <p><strong>Impact:</strong> {{ ticket.ticket_impact }}</p>
+            <p><strong>Urgency:</strong> {{ ticket.ticket_urgency }}</p>
             <p><strong>Status:</strong> {{ ticket.ticket_status }}</p>
             <p><strong>Ticket Content:</strong> {{ticket.ticket_message}}</p>
             <p><strong>End User Replies:</strong> {{ticket.ticket_notes}}</p>
         </div>
 
         <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'In-Progress')">Mark In-Progress</button>
-
         <button class="close-tkt-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Close Ticket</button>
         <!-- By keeping this script near the bottom of the page, this ensures all attributes load first.-->
         <script>
@@ -132,8 +133,7 @@
                 .catch(error => console.error("Error:", error));
             }
         </script>
-
-    <p class="footer-text">©2025 GoobyDesk, a <a href="https://www.bluebotpc.com/">BlueBotPC</a> platform. All rights reserved.</p>
+        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a></p>
     </div>
 </body>
 </html>

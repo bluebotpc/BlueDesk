@@ -39,13 +39,16 @@
         }
 
         .container {
-            max-width: 800px;
-            margin: 20px;
-            padding: 20px;
+            width: 70%;  /* Allows flexibility */
+            max-width: 1200px;  /* Expands on larger screens */
+            min-width: 320px;  /* Prevents it from getting too small */
+            margin: 20px auto;  /* Center the container */
+            padding: 30px;  /* More padding for larger screens */
             border: 2px solid #ddd;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
+            transition: all 0.3s ease-in-out;  /* Smooth resizing */
         }
 
         .logo img {
@@ -140,6 +143,21 @@
             <label for="message">Ticket Message:</label>
             <textarea id="message" name="ticket_message" placeholder="Please provide details to submit your request." minlength="4" maxlength="512" required></textarea>
 
+            <label for="ticket_impact">Ticket Impact:</label>
+            <select id="type" name="ticket_impact" required>
+                <option value="Low Impact">Low</option>
+                <option value="Medium Impact">Medium</option>
+                <option value="High Impact">High</option>
+            </select>
+
+            <label for="ticket_urgency">Ticket Urgency:</label>
+            <select id="type" name="ticket_urgency" required>
+                <option value="Panning">Planning</option>
+                <option value="Low Urgency">Low</option>
+                <option value="Medium Urgency">Medium</option>
+                <option value="High Urgency">High</option>
+            </select>
+
             <label for="type">Ticket Type:</label>
             <select id="type" name="request_type" required>
                 <option value="Request">Request</option>
@@ -151,33 +169,7 @@
 
             <button type="submit" class="submit-btn">Submit Ticket</button>
         </form>
-        <p class="footer-text">©2025 GoobyDesk, a <a href="https://www.bluebotpc.com/">BlueBotPC</a> platform. All rights reserved.</p>
+        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a></p>
     </div>
-
-<!-- BELOW IS THE IMPLENTATION OF DARK MODE IT WILL NEED TWEAKS-->
-    <!--<script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const darkModeToggle = document.getElementById("darkModeToggle");
-            const body = document.body;
-        
-            // Check local storage for theme preference
-            if (localStorage.getItem("darkMode") === "enabled") {
-                body.classList.add("dark-mode");
-                darkModeToggle.textContent = "☀️ Light Mode";
-            }
-        
-            darkModeToggle.addEventListener("click", function () {
-                if (body.classList.contains("dark-mode")) {
-                    body.classList.remove("dark-mode");
-                    localStorage.setItem("darkMode", "disabled");
-                    darkModeToggle.textContent = "🌙 Dark Mode";
-                } else {
-                    body.classList.add("dark-mode");
-                    localStorage.setItem("darkMode", "enabled");
-                    darkModeToggle.textContent = "☀️ Light Mode";
-                }
-            });
-        });
-        </script> -->
 </body>
 </html>
