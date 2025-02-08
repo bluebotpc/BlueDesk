@@ -32,13 +32,13 @@ SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/5
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
 # Read/Loads the ticket file into memory. This is the original load_tickets function that works on Windows and Unix.
-#def load_tickets():
-#    try:
-#        with open(TICKETS_FILE, "r") as tkt_file:
-#            return json.load(tkt_file)
-#    except FileNotFoundError:
-#        return [] # represents an empty list.
-#
+def load_tickets():
+    try:
+        with open(TICKETS_FILE, "r") as tkt_file:
+            return json.load(tkt_file)
+    except FileNotFoundError:
+        return [] # represents an empty list.
+
 # This load_tickets function contains the file locking mechanism for Linux.
  
 def load_tickets(retries=5, delay=0.2):
@@ -281,7 +281,7 @@ def ticket_detail(ticket_number):
 
     return render_template("404.html"), 404 # Return a custom HTTP 404 page.
 
-# Route/routine for updating a ticket.
+# Route/routine for updating a ticket from Ticket Commander. Not called by the main technician dashboard.
 @app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only authenticated techs can update tickets.
@@ -296,11 +296,12 @@ def update_ticket_status(ticket_number, ticket_status):
         if ticket["ticket_number"] == ticket_number: 
             ticket["ticket_status"] = ticket_status  
             save_tickets(tickets)  # Save the changes to the tickets.
+            send_TktClosed_discord_notification(ticket_number) # Discord notification for closing a ticket.
             return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."}) # Browser prompt on successful status update.
         
     return render_template("404.html"), 404
 
-# Route/routine to close a ticket. This invloves a write operation to the tickets.json file.
+# Route/routine to close a ticket from the main technician dashboard. Not called from Ticket Commander.
 @app.route("/close_ticket/<ticket_number>", methods=["POST"])
 def close_ticket(ticket_number):
     if not session.get("technician"):  # Check the cookie for technician tag.
@@ -311,8 +312,8 @@ def close_ticket(ticket_number):
         if ticket["ticket_number"] == ticket_number: # Basic input validation.
             ticket["ticket_status"] = "Closed"
             save_tickets(tickets)
-            send_TktClosed_discord_notification(ticket_number) # Discord notification.
-            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # Browser Popup.
+            send_TktClosed_discord_notification(ticket_number) # Discord notification for closing a ticket.
+            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # Browser Popup to confirm ticket closure.
         
     # If the ticket was not found....
     return render_template("404.html"), 404
