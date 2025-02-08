@@ -32,11 +32,9 @@ Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and O
 
 ## Goals and Roadmap to Production v1.0
 
-- Priority/Urgency drop down for User submitted Tickets.
 - Implement "Logged In Technician" for Closed_By status.
 - File locking and retry support on Windows. (CONSIDERING DROPPING)
-- Implement standardized ```/var/log/goobydesk``` logging. (CONSIDERING DROPPING)
-- Log Ticket activity into a Discord channel.
+- Implement standardized ```/var/log/goobydesk``` logging.
 
 ### Linux Project Setup
 
