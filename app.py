@@ -9,12 +9,12 @@ import threading # Background process.
 import time # Used for script sleeping.
 import os # Required to load DOTENV files.
 import fcntl # Unix file locking support.
-# import msvcrt # Windows NT file locking support.
 from dotenv import load_dotenv # Dependant on OS module
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
 from email.header import decode_header
 from datetime import datetime # Timestamps on tickets.
+from local_webhook_handler import send_discord_notification # Webhook handler, local to this repo.
 
 app = Flask(__name__)
 app.secret_key = "secretdemokey"
@@ -28,6 +28,7 @@ EMAIL_ACCOUNT = os.getenv("EMAIL_ACCOUNT") # SEND FROM Email Address/Username
 EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password
 SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
 SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
 # Read/Loads the ticket file into memory. This is the original load_tickets function that works on Windows and Unix.
 #def load_tickets():
@@ -36,7 +37,8 @@ SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/5
 #            return json.load(tkt_file)
 #    except FileNotFoundError:
 #        return [] # represents an empty list.
-
+#
+# This load_tickets function contains the file locking mechanism for Linux.
 def load_tickets(retries=5, delay=0.2):
     # Load tickets from JSON file with file locking and retry logic.
     for attempt in range(retries):
@@ -221,6 +223,9 @@ def home():
 
         # Send the email with HTML format
         send_email(requestor_email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
+
+        # Send a Discord webhook notification.
+        send_discord_notification(ticket_message, ticket_number)
         
         return redirect(url_for("home"))
     
