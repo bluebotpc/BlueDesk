@@ -21,7 +21,7 @@ def send_discord_notification(ticket_number, ticket_message):
             {
                 "title": f"New Ticket Created: {ticket_number}",
                 "description": f"**Details:** {ticket_message}",
-                "color": 5814783,  # Some blue color, not sure what this value is actually based on.
+                "color": 5814783,  # Light Blue # decimal representation of a hexadecimal color code
             }
         ]
     }
@@ -34,6 +34,41 @@ def send_discord_notification(ticket_number, ticket_message):
         
         if response.status_code == 204:
             print(f"INFO - WEBHOOK HANDLER - Ticket {ticket_number} notification sent to Discord.")
+        else:
+            print(f"WARNING - WEBHOOK HANDLER - Unexpected response code: {response.status_code}")
+
+    except requests.exceptions.ConnectionError:
+        print("ERROR - WEBHOOK HANDLER - Failed to connect to Discord. Check internet and webhook URL.")
+    except requests.exceptions.Timeout:
+        print("ERROR - WEBHOOK HANDLER - Request to Discord timed out.")
+    except requests.exceptions.RequestException as e:
+        print(f"ERROR - WEBHOOK HANDLER - Unexpected error: {e}")
+
+# Uncalled function for TktClosed notifications to be added into a TicketCommander workflow.
+def send_TktClosed_discord_notification(ticket_number):
+    if not DISCORD_WEBHOOK_URL:
+        print("ERROR - WEBHOOK HANDLER - DISCORD_WEBHOOK_URL is not set. Check your .env file.")
+        return
+    
+    data = {
+        "username": "GoobyDesk",
+        
+        "embeds": [
+            {
+                "title": f"A ticket has been closed: {ticket_number}",
+                "color": 16776960,  # Yellow # decimal representation of a hexadecimal color code
+            }
+        ]
+    }
+
+    headers = {"Content-Type": "application/json"}
+
+    try:
+        response = requests.post(DISCORD_WEBHOOK_URL, data=json.dumps(data), headers=headers)
+        response.raise_for_status()  # Raise exception for HTTP errors
+        
+        if response.status_code == 204:
+            print(f"INFO - WEBHOOK HANDLER - Ticket {ticket_number} has been closed notification sent to Discord.")
         else:
             print(f"WARNING - WEBHOOK HANDLER - Unexpected response code: {response.status_code}")
 

@@ -15,6 +15,7 @@ from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.h
 from email.header import decode_header
 from datetime import datetime # Timestamps on tickets.
 from local_webhook_handler import send_discord_notification # Webhook handler, local to this repo.
+from local_webhook_handler import send_TktClosed_discord_notification # I need to find a better way to handle this import but I learned this new thing!
 
 app = Flask(__name__)
 app.secret_key = "secretdemokey"
@@ -310,6 +311,7 @@ def close_ticket(ticket_number):
         if ticket["ticket_number"] == ticket_number: # Basic input validation.
             ticket["ticket_status"] = "Closed"
             save_tickets(tickets)
+            send_TktClosed_discord_notification(ticket_number) # Discord notification.
             return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # Browser Popup.
         
     # If the ticket was not found....
