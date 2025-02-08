@@ -39,22 +39,23 @@ DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 #        return [] # represents an empty list.
 #
 # This load_tickets function contains the file locking mechanism for Linux.
+ 
 def load_tickets(retries=5, delay=0.2):
-    # Load tickets from JSON file with file locking and retry logic.
-    for attempt in range(retries):
-        try:
-            with open(TICKETS_FILE, "r") as file:
-                fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
-                tickets = json.load(file)
-                fcntl.flock(file, fcntl.LOCK_UN)  # Unlock the file.
-                return tickets
-        except (json.JSONDecodeError, FileNotFoundError) as e:
-            print(f"ERROR - Error loading tickets: {e}")
-            return []
-        except BlockingIOError:
-            print(f"DEBUG - File is locked, retrying... ({attempt+1}/{retries})")
-            time.sleep(delay)  # Wait before retrying
-    raise Exception("ERROR - Failed to load tickets after multiple attempts.")
+   # Load tickets from JSON file with file locking and retry logic.
+   for attempt in range(retries):
+       try:
+           with open(TICKETS_FILE, "r") as file:
+               fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
+               tickets = json.load(file)
+               fcntl.flock(file, fcntl.LOCK_UN)  # Unlock the file.
+               return tickets
+       except (json.JSONDecodeError, FileNotFoundError) as e:
+           print(f"ERROR - Error loading tickets: {e}")
+           return []
+       except BlockingIOError:
+           print(f"DEBUG - File is locked, retrying... ({attempt+1}/{retries})")
+           time.sleep(delay)  # Wait before retrying
+   raise Exception("ERROR - Failed to load tickets after multiple attempts.")
 
 # Writes to the ticket file database.
 def save_tickets(tickets):
@@ -225,7 +226,7 @@ def home():
         send_email(requestor_email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
 
         # Send a Discord webhook notification.
-        send_discord_notification(ticket_message, ticket_number)
+        send_discord_notification(ticket_number, ticket_message)
         
         return redirect(url_for("home"))
     
