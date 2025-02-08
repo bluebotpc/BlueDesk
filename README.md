@@ -49,6 +49,12 @@ CTRL+C to break. ```deactivate``` to clean up.
 
 ### Windows Project Setup
 
+**Technically Broken, no longer supported.**
+
+1. Comment out ```import fcntl```
+2. Comment out ```load_tickets``` lines 44-60.
+3. Uncomment top ```load_tickets```.
+
 ```shell
 python -m venv venv
 venv\Scripts\activate

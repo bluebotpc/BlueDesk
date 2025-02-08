@@ -133,8 +133,8 @@
         </div>
         <!-- Below is the Javascript required for the close ticket button. -->
         <script>
-            async function closeTicket() { // Using async avoids nested .then() calls...
-                let ticketId = document.getElementById("ticketIdInput").value.trim();
+            async function updateTicketStatus(ticketId, newStatus) { // Reusable function for status updates
+                ticketId = ticketId.trim();
         
                 if (!ticketId) {
                     alert("Ticket Number was NOT found. Try again.");
@@ -142,20 +142,25 @@
                 }
         
                 try {
-                    let response = await fetch(`/close_ticket/${ticketId}`, {
+                    let response = await fetch(`/ticket/${ticketId}/update_status/${newStatus}`, {
                         method: "POST",
                         headers: { "Accept": "application/json" }
                     });
         
-                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`); // Super basic error catching and handling.
+                    if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
         
                     let data = await response.json();
                     alert(data.message);
-                    location.reload();  // Refresh dashboard after closing a ticket.
+                    location.reload();  // Refresh dashboard after updating ticket.
                 } catch (error) {
                     console.error("Error:", error);
-                    alert("An error occurred while closing the ticket. Please try again.");
+                    alert("An error occurred while updating the ticket. Please try again.");
                 }
+            }
+        
+            function closeTicket() {
+                let ticketId = document.getElementById("ticketIdInput").value;
+                updateTicketStatus(ticketId, "Closed");
             }
         </script>
         
