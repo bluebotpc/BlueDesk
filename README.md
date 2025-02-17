@@ -50,8 +50,7 @@ Closed Tickets are hidden from the Dashboard by default.
 
 ## Goals and Roadmap to Production v1.0
 
-- Implement "Logged In Technician" for Closed_By status.
-- File locking and retry support on Windows. (CONSIDERING DROPPING)
+- Implement "Logged In Technician" and Closed_By status.
 - Implement standardized ```/var/log/goobydesk``` logging.
 
 ### Linux Project Setup
@@ -71,7 +70,8 @@ CTRL+C to break. ```deactivate``` to clean up.
 
 1. Comment out ```import fcntl```
 2. Comment out ```load_tickets``` lines 44-60.
-3. Uncomment top ```load_tickets```.
+3. Uncomment top ```load_tickets```. lines 35 - 42.
+4. Enable Debugging at EOF.
 
 ```shell
 python -m venv venv
