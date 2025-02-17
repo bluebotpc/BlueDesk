@@ -237,7 +237,7 @@ def home():
     
     return render_template("index.html")
 
-# Route/routine for the technician login process.
+# Route/routine for the technician login page/process.
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -256,18 +256,18 @@ def login():
         
     return render_template("login.html")
 
-# Route/routine for the technician login process.
+# Route/routine for rendering the core technician dashboard. Displays all Open and In-Progress tickets.
 @app.route("/dashboard")
 def dashboard():
-    if not session.get("technician"): # If the local machine does not have a session token/cookie containing the 'technician' tag.
-        return redirect(url_for("login")) # Redirect them to the login page.
+    if not session.get("technician"): # Check for technician login cookie.
+        return redirect(url_for("login")) #else redirect them to the login page.
     
     tickets = load_tickets()
     # Filtering out tickets with the Closed Status on the main Dashboard.
     open_tickets = [ticket for ticket in tickets if ticket["ticket_status"].lower() != "closed"]
     return render_template("dashboard.html", tickets=open_tickets)
 
-# Route/routine for viewing a ticket, loads into what I call Ticket Commander.
+# Route/routine for viewing a ticket in the Ticket Commander view.
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
     if "technician" not in session:  # Validate the logged-in user cookie...
@@ -281,7 +281,7 @@ def ticket_detail(ticket_number):
 
     return render_template("404.html"), 404
 
-# Route/routine for updating a ticket from Ticket Commander.
+# Route/routine for updating a ticket. Called from Dashboard and Ticket Commander.
 @app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only authenticated techs can update tickets.
