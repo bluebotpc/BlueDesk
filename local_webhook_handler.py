@@ -68,7 +68,7 @@ def send_TktUpdate_discord_notification(ticket_number, ticket_status):
         response.raise_for_status()  # Raise exception for HTTP errors
         
         if response.status_code == 204:
-            print(f"INFO - WEBHOOK HANDLER - Ticket {ticket_number} has been closed notification sent to Discord.")
+            print(f"INFO - WEBHOOK HANDLER - Ticket {ticket_number} status change notification sent to Discord.")
         else:
             print(f"WARNING - WEBHOOK HANDLER - Unexpected response code: {response.status_code}")
 
