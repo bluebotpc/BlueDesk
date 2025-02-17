@@ -301,24 +301,6 @@ def update_ticket_status(ticket_number, ticket_status):
         
     return render_template("404.html"), 404
 
-# Route/routine to close a ticket. Originally implemented on the dashboard but now is legacy code.
-# This API/POST route will be removed pre v1.0.0
-#@app.route("/close_ticket/<ticket_number>", methods=["POST"])
-#def close_ticket(ticket_number):
-#    if not session.get("technician"):  # Check the cookie for technician tag.
-#        return render_template("403.html"), 403
-#    
-#    tickets = load_tickets()
-#    for ticket in tickets:
-#        if ticket["ticket_number"] == ticket_number: # Basic input validation.
-#            ticket["ticket_status"] = "Closed"
-#            save_tickets(tickets)
-#            send_TktUpdate_discord_notification(ticket_number) # Discord notification for closing a ticket.
-#            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # Browser Popup to confirm ticket closure.
-#        
-#    # If the ticket was not found....
-#    return render_template("404.html"), 404
-
 # Removes the session cookie from the user browser, sending the Technician/user back to the login page.
 @app.route("/logout")
 def logout():
