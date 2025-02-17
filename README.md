@@ -68,7 +68,7 @@ CTRL+C to break. ```deactivate``` to clean up.
 
 **Technically Broken, no longer supported.**
 
-1. Comment out ```import fcntl```
+1. Comment out ```import fcntl``` line 11.
 2. Comment out ```load_tickets``` lines 44-60.
 3. Uncomment top ```load_tickets```. lines 35 - 42.
 4. Enable Debugging at EOF.
