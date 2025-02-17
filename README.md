@@ -16,6 +16,15 @@ Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and O
   - Requestor Name
   - Requestor Contact Email
   - Ticket Subject/Title
+  - Ticket Impact
+    - Low
+    - Medium
+    - High
+  - Ticket Urgency
+    - Planning
+    - Low
+    - Medium
+    - High
   - Ticket Message
   - Ticket Category
     - Request
