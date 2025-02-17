@@ -15,7 +15,7 @@ from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.h
 from email.header import decode_header
 from datetime import datetime # Timestamps on tickets.
 from local_webhook_handler import send_discord_notification # Webhook handler, local to this repo.
-from local_webhook_handler import send_TktClosed_discord_notification # I need to find a better way to handle this import but I learned this new thing!
+from local_webhook_handler import send_TktUpdate_discord_notification # I need to find a better way to handle this import but I learned this new thing!
 
 app = Flask(__name__)
 app.secret_key = "secretdemokey"
@@ -252,7 +252,7 @@ def login():
                 session["technician"] = username  # Store the technician's username in the session cookie.
                 return redirect(url_for("dashboard")) # On successful login, send to Dashboard.
             else:
-                return render_template("404.html"), 404 # Failure sends to 404. This could be tweaked.
+                return render_template("404.html"), 404 # Send our custom 404 page.
         
     return render_template("login.html")
 
@@ -271,7 +271,7 @@ def dashboard():
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
     if "technician" not in session:  # Validate the logged-in user cookie...
-        return render_template("403.html"), 403  # Return a custom HTTP 403 page.
+        return render_template("403.html"), 403  # Return our custom HTTP 403 page.
 
     tickets = load_tickets()
     ticket = next((t for t in tickets if t["ticket_number"] == ticket_number), None)
@@ -279,45 +279,45 @@ def ticket_detail(ticket_number):
     if ticket:
         return render_template("ticket-commander.html", ticket=ticket)
 
-    return render_template("404.html"), 404 # Return a custom HTTP 404 page.
+    return render_template("404.html"), 404
 
-# Route/routine for updating a ticket from Ticket Commander. Not called by the main technician dashboard.
+# Route/routine for updating a ticket from Ticket Commander.
 @app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only authenticated techs can update tickets.
-        return render_template("403.html"), 403 # Otherwise, custom 403 error.
+        return render_template("403.html"), 403
     
     valid_statuses = ["Open", "In-Progress", "Closed"]
     if ticket_status not in valid_statuses:
-        return render_template("400.html"), 400 # Return HTTP 400 but this may change.
+        return render_template("400.html"), 400
 
     tickets = load_tickets()  # Loads tickets into memory.
     for ticket in tickets:
         if ticket["ticket_number"] == ticket_number: 
             ticket["ticket_status"] = ticket_status  
             save_tickets(tickets)  # Save the changes to the tickets.
-            send_TktClosed_discord_notification(ticket_number, ticket_status) # Discord notification for closing a ticket.
+            send_TktUpdate_discord_notification(ticket_number, ticket_status) # Discord notification for closing a ticket.
             return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."}) # Browser prompt on successful status update.
         
     return render_template("404.html"), 404
 
-# Route/routine to close a ticket from the main technician dashboard. Not called from Ticket Commander.
-# Even if I refactor the dashboard to use the other endpoint, this is a good API endpoint to leave open for POST methods.
-@app.route("/close_ticket/<ticket_number>", methods=["POST"])
-def close_ticket(ticket_number):
-    if not session.get("technician"):  # Check the cookie for technician tag.
-        return render_template("403.html"), 403
-    
-    tickets = load_tickets()
-    for ticket in tickets:
-        if ticket["ticket_number"] == ticket_number: # Basic input validation.
-            ticket["ticket_status"] = "Closed"
-            save_tickets(tickets)
-            send_TktClosed_discord_notification(ticket_number) # Discord notification for closing a ticket.
-            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # Browser Popup to confirm ticket closure.
-        
-    # If the ticket was not found....
-    return render_template("404.html"), 404
+# Route/routine to close a ticket. Originally implemented on the dashboard but now is legacy code.
+# This API/POST route will be removed pre v1.0.0
+#@app.route("/close_ticket/<ticket_number>", methods=["POST"])
+#def close_ticket(ticket_number):
+#    if not session.get("technician"):  # Check the cookie for technician tag.
+#        return render_template("403.html"), 403
+#    
+#    tickets = load_tickets()
+#    for ticket in tickets:
+#        if ticket["ticket_number"] == ticket_number: # Basic input validation.
+#            ticket["ticket_status"] = "Closed"
+#            save_tickets(tickets)
+#            send_TktUpdate_discord_notification(ticket_number) # Discord notification for closing a ticket.
+#            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # Browser Popup to confirm ticket closure.
+#        
+#    # If the ticket was not found....
+#    return render_template("404.html"), 404
 
 # Removes the session cookie from the user browser, sending the Technician/user back to the login page.
 @app.route("/logout")

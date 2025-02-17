@@ -44,8 +44,8 @@ def send_discord_notification(ticket_number, ticket_message):
     except requests.exceptions.RequestException as e:
         print(f"ERROR - WEBHOOK HANDLER - Unexpected error: {e}")
 
-# Uncalled function for TktClosed notifications to be added into a TicketCommander workflow.
-def send_TktClosed_discord_notification(ticket_number, ticket_status):
+# send_TktUpdate_discord_notification will send a webhook when the status becomes In-Progress or Closed..
+def send_TktUpdate_discord_notification(ticket_number, ticket_status):
     if not DISCORD_WEBHOOK_URL:
         print("ERROR - WEBHOOK HANDLER - DISCORD_WEBHOOK_URL is not set. Check your .env file.")
         return
