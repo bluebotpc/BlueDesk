@@ -166,7 +166,8 @@
         
         <!-- Technician logout button -->
         <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
-        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a></p>
+        <!-- Footer Text -->
+        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a> | Logged In as: {{ loggedInTech }}</p>
     </div>
 </body>
 </html>

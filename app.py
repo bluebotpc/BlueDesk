@@ -38,7 +38,7 @@ DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 #            return json.load(tkt_file)
 #    except FileNotFoundError:
 #        return [] # represents an empty list.
-#
+
 # This load_tickets function contains the file locking mechanism for Linux.
  
 def load_tickets(retries=5, delay=0.2):
@@ -265,7 +265,7 @@ def dashboard():
     tickets = load_tickets()
     # Filtering out tickets with the Closed Status on the main Dashboard.
     open_tickets = [ticket for ticket in tickets if ticket["ticket_status"].lower() != "closed"]
-    return render_template("dashboard.html", tickets=open_tickets)
+    return render_template("dashboard.html", tickets=open_tickets, loggedInTech=session["technician"])
 
 # Route/routine for viewing a ticket in the Ticket Commander view.
 @app.route("/ticket/<ticket_number>")
@@ -277,7 +277,7 @@ def ticket_detail(ticket_number):
     ticket = next((t for t in tickets if t["ticket_number"] == ticket_number), None)
     
     if ticket:
-        return render_template("ticket-commander.html", ticket=ticket)
+        return render_template("ticket-commander.html", ticket=ticket, loggedInTech=session["technician"])
 
     return render_template("404.html"), 404
 
@@ -291,15 +291,23 @@ def update_ticket_status(ticket_number, ticket_status):
     if ticket_status not in valid_statuses:
         return render_template("400.html"), 400
 
-    tickets = load_tickets()  # Loads tickets into memory.
+    loggedInTech = session["technician"]  # Capture the logged-in technician.
+    tickets = load_tickets()  # Load tickets into memory.
+
     for ticket in tickets:
         if ticket["ticket_number"] == ticket_number: 
             ticket["ticket_status"] = ticket_status  
-            save_tickets(tickets)  # Save the changes to the tickets.
-            send_TktUpdate_discord_notification(ticket_number, ticket_status) # Discord notification for closing a ticket.
-            return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."}) # Browser prompt on successful status update.
-        
-    return render_template("404.html"), 404
+
+            if ticket_status == "Closed":
+                ticket["ClosedBy"] = loggedInTech  # Append the Closed_By_Tech to support ticket audits.
+                ticket["closure_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Append the ticket closure date.
+
+            save_tickets(tickets)  # Save the updated tickets.
+            send_TktUpdate_discord_notification(ticket_number, ticket_status)  # Updated notification.
+            return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."})  # Success popup.
+
+    return render_template("404.html"), 404  # If ticket not found.
+
 
 # Removes the session cookie from the user browser, sending the Technician/user back to the login page.
 @app.route("/logout")
