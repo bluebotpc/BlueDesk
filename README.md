@@ -50,11 +50,11 @@ Closed Tickets are hidden from the Dashboard by default.
 
 ## Goals and Roadmap to Production v1.0
 
-- Implement "Logged In Technician" to HTML templates.
-- Implement Closed_timestamp.
-- Implement ClosedBy value.
-- Implement Technician-posted notes.
-- Implement standardized ```/var/log/goobydesk``` logging.
+- Implement "Logged In Technician" to HTML templates. (Pending)
+- Implement Closed_timestamp. (Pending)
+- Implement ClosedBy value. (Pending)
+- Implement Technician-posted notes. (Not Started)
+- Implement standardized ```/var/log/goobydesk``` logging. (Not Started)
 
 ### Linux Project Setup
 
