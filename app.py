@@ -299,7 +299,7 @@ def update_ticket_status(ticket_number, ticket_status):
             ticket["ticket_status"] = ticket_status  
 
             if ticket_status == "Closed":
-                ticket["ClosedBy"] = loggedInTech  # Append the Closed_By_Tech to support ticket audits.
+                ticket["closed_by"] = loggedInTech  # Append the Closed_By_Tech to support ticket audits.
                 ticket["closure_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Append the ticket closure date.
 
             save_tickets(tickets)  # Save the updated tickets.
