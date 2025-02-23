@@ -15,7 +15,7 @@ from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.h
 from email.header import decode_header
 from datetime import datetime # Timestamps on tickets.
 from local_webhook_handler import send_discord_notification # Webhook handler, local to this repo.
-from local_webhook_handler import send_TktClosed_discord_notification # I need to find a better way to handle this import but I learned this new thing!
+from local_webhook_handler import send_TktUpdate_discord_notification # I need to find a better way to handle this import but I learned this new thing!
 
 app = Flask(__name__)
 app.secret_key = "secretdemokey"
@@ -38,7 +38,7 @@ DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 #            return json.load(tkt_file)
 #    except FileNotFoundError:
 #        return [] # represents an empty list.
-#
+
 # This load_tickets function contains the file locking mechanism for Linux.
  
 def load_tickets(retries=5, delay=0.2):
@@ -237,7 +237,7 @@ def home():
     
     return render_template("index.html")
 
-# Route/routine for the technician login process.
+# Route/routine for the technician login page/process.
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -252,72 +252,62 @@ def login():
                 session["technician"] = username  # Store the technician's username in the session cookie.
                 return redirect(url_for("dashboard")) # On successful login, send to Dashboard.
             else:
-                return render_template("404.html"), 404 # Failure sends to 404. This could be tweaked.
+                return render_template("404.html"), 404 # Send our custom 404 page.
         
     return render_template("login.html")
 
-# Route/routine for the technician login process.
+# Route/routine for rendering the core technician dashboard. Displays all Open and In-Progress tickets.
 @app.route("/dashboard")
 def dashboard():
-    if not session.get("technician"): # If the local machine does not have a session token/cookie containing the 'technician' tag.
-        return redirect(url_for("login")) # Redirect them to the login page.
+    if not session.get("technician"): # Check for technician login cookie.
+        return redirect(url_for("login")) #else redirect them to the login page.
     
     tickets = load_tickets()
     # Filtering out tickets with the Closed Status on the main Dashboard.
     open_tickets = [ticket for ticket in tickets if ticket["ticket_status"].lower() != "closed"]
-    return render_template("dashboard.html", tickets=open_tickets)
+    return render_template("dashboard.html", tickets=open_tickets, loggedInTech=session["technician"])
 
-# Route/routine for viewing a ticket, loads into what I call Ticket Commander.
+# Route/routine for viewing a ticket in the Ticket Commander view.
 @app.route("/ticket/<ticket_number>")
 def ticket_detail(ticket_number):
     if "technician" not in session:  # Validate the logged-in user cookie...
-        return render_template("403.html"), 403  # Return a custom HTTP 403 page.
+        return render_template("403.html"), 403  # Return our custom HTTP 403 page.
 
     tickets = load_tickets()
     ticket = next((t for t in tickets if t["ticket_number"] == ticket_number), None)
     
     if ticket:
-        return render_template("ticket-commander.html", ticket=ticket)
+        return render_template("ticket-commander.html", ticket=ticket, loggedInTech=session["technician"])
 
-    return render_template("404.html"), 404 # Return a custom HTTP 404 page.
+    return render_template("404.html"), 404
 
-# Route/routine for updating a ticket from Ticket Commander. Not called by the main technician dashboard.
+# Route/routine for updating a ticket. Called from Dashboard and Ticket Commander.
 @app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
 def update_ticket_status(ticket_number, ticket_status):
     if not session.get("technician"):  # Ensure only authenticated techs can update tickets.
-        return render_template("403.html"), 403 # Otherwise, custom 403 error.
+        return render_template("403.html"), 403
     
     valid_statuses = ["Open", "In-Progress", "Closed"]
     if ticket_status not in valid_statuses:
-        return render_template("400.html"), 400 # Return HTTP 400 but this may change.
+        return render_template("400.html"), 400
 
-    tickets = load_tickets()  # Loads tickets into memory.
+    loggedInTech = session["technician"]  # Capture the logged-in technician.
+    tickets = load_tickets()  # Load tickets into memory.
+
     for ticket in tickets:
         if ticket["ticket_number"] == ticket_number: 
             ticket["ticket_status"] = ticket_status  
-            save_tickets(tickets)  # Save the changes to the tickets.
-            send_TktClosed_discord_notification(ticket_number, ticket_status) # Discord notification for closing a ticket.
-            return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."}) # Browser prompt on successful status update.
-        
-    return render_template("404.html"), 404
 
-# Route/routine to close a ticket from the main technician dashboard. Not called from Ticket Commander.
-# Even if I refactor the dashboard to use the other endpoint, this is a good API endpoint to leave open for POST methods.
-@app.route("/close_ticket/<ticket_number>", methods=["POST"])
-def close_ticket(ticket_number):
-    if not session.get("technician"):  # Check the cookie for technician tag.
-        return render_template("403.html"), 403
-    
-    tickets = load_tickets()
-    for ticket in tickets:
-        if ticket["ticket_number"] == ticket_number: # Basic input validation.
-            ticket["ticket_status"] = "Closed"
-            save_tickets(tickets)
-            send_TktClosed_discord_notification(ticket_number) # Discord notification for closing a ticket.
-            return jsonify({"message": f"Ticket {ticket_number} has been closed."}) # Browser Popup to confirm ticket closure.
-        
-    # If the ticket was not found....
-    return render_template("404.html"), 404
+            if ticket_status == "Closed":
+                ticket["closed_by"] = loggedInTech  # Append the Closed_By_Tech to support ticket audits.
+                ticket["closure_date"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Append the ticket closure date.
+
+            save_tickets(tickets)  # Save the updated tickets.
+            send_TktUpdate_discord_notification(ticket_number, ticket_status)  # Updated notification.
+            return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."})  # Success popup.
+
+    return render_template("404.html"), 404  # If ticket not found.
+
 
 # Removes the session cookie from the user browser, sending the Technician/user back to the login page.
 @app.route("/logout")
