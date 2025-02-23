@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Matt Faulkner">
     <meta name="theme-color" content="#284389"> <!-- Mobile Browser stylized address bar.-->
+    <meta http-equiv="refresh" content="600"> <!-- 10 Minute Page Refresh -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> <!-- Force IE to use latest rendering engine available.-->
+    <meta name="robots" content="noindex, nofollow"> <!--Discourage Search Engine Indexing of this page-->
     <title>GoobyDesk - Ticket Commander</title>
     <!-- Style/CSS goes in the HTML5 head -->
     <style>
@@ -133,7 +136,7 @@
                 .catch(error => console.error("Error:", error));
             }
         </script>
-        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a> | Logged In as: {{ loggedInTech }}</p>
+        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a> | Logged In as: {{ loggedInTech }} | <a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
     </div>
 </body>
 </html>

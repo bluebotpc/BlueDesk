@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Matt Faulkner">
     <meta name="description" content="GoobyDesk Employee Login">
-    <meta name="theme-color" content="#284389"> <!-- Mobile Browser stylized address bar.-->
+    <meta name="theme-color" content="#284389"> <!-- Mobile Browser stylized address bar.-->. 
+    <meta name="robots" content="noindex, nofollow"> <!--Discourage Search Engine Indexing of this page-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> <!-- Force IE to use latest rendering engine available.-->
     <title>GoobyDesk - Technician Login</title>
     <!-- Style/CSS goes in the HTML5 head -->
     <style>
@@ -100,7 +102,7 @@
 
             <button type="submit" class="submit-btn">Login</button>
         </form>
-        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a></p>
+        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a> | <a href="{{ url_for('/') }}">Home</a></p>
     </div>
 </body>
 </html>
