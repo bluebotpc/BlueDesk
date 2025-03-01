@@ -50,9 +50,9 @@ Closed Tickets are hidden from the Dashboard by default.
 
 ## Goals and Roadmap to Production v1.0
 
-- Implement Technician-posted notes. (Not Started)
 - Implement standardized ```/var/log/goobydesk``` logging. (Not Started)
 - Tweak Discord Webhook message content. (Not Started)
+- Implement rate-limiting (Test env was subject to abuse)
 
 ### Linux Project Setup
 
