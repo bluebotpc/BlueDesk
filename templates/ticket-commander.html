@@ -5,7 +5,10 @@
     <link rel="icon" type="image/x-icon" href="static/favicon.ico"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="Matt Faulkner">
+    <meta name="robots" content="noindex, nofollow"> <!--Discourage Search Engine Indexing of this page-->
     <meta name="theme-color" content="#284389"> <!-- Mobile Browser stylized address bar.-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"> <!-- Force IE to use latest rendering engine available.-->
+    <meta http-equiv="refresh" content="600"> <!-- 10 Minute Page Refresh -->
     <title>GoobyDesk - Ticket Commander</title>
     <!-- Style/CSS goes in the HTML5 head -->
     <style>
@@ -85,7 +88,20 @@
         .close-tkt-btn:hover {
         background-color: #1f356b;
         }
-
+        .addNote-btn {
+            background-color: #284389;
+            color: #fff;
+            font-size: 16px;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 48%;
+        }
+        .addNote-btn:hover {
+            background-color: #A8C0E2;
+        }
         .footer-text {
             font-size: 12px;
             color: #b7b7b7;
@@ -114,7 +130,10 @@
 
         <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'In-Progress')">Mark In-Progress</button>
         <button class="close-tkt-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Close Ticket</button>
+        <textarea id="noteContent" placeholder="New note...."></textarea>
+        <button class="addNote-btn" onclick="submitNote('{{ ticket.ticket_number }}')">Add Note</button>
         <!-- By keeping this script near the bottom of the page, this ensures all attributes load first.-->
+        <!-- Script to enable status buttons. -->
         <script>
             function updateTicketStatus(ticketId, newStatus) {
                 if (!ticketId) {
@@ -133,7 +152,34 @@
                 .catch(error => console.error("Error:", error));
             }
         </script>
-        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a> | Logged In as: {{ loggedInTech }}</p>
+        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a> | Logged In as: {{ loggedInTech }} | <a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
     </div>
+<!-- Script to append a note to the ticket. -->
+    <script>
+        async function submitNote(ticketNumber) {
+            let noteContent = document.getElementById("noteContent").value.trim();
+            if (!noteContent) {
+                alert("Note content cannot be empty.");
+                return;
+            }
+        
+            try {
+                let response = await fetch(`/ticket/${ticketNumber}/append_note`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams({ note_content: noteContent }) // Ensure the key is "note_content"
+                });
+            
+                let data = await response.json();  // Parse JSON response
+                if (!response.ok) throw new Error(data.message || "Unknown error");
+            
+                alert(data.message);
+                location.reload(); // Refresh to show the new note
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to add note. Please try again.");
+            }
+        }
+    </script>
 </body>
 </html>

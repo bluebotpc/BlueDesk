@@ -2,7 +2,7 @@
 
 Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and One Man MSPs.
 
-**Current Version:**  v0.4.1
+**Current Version:**  v0.4.2
 
 [GoobyDesk Repo Wiki](https://github.com/GoobyFRS/GoobyDesk/wiki) & [Production Deployment Guide](https://github.com/GoobyFRS/GoobyDesk/wiki/Production-Deployment-Guide) you can find information on my code standards, my variables, and other data I think is important for an open source project to be successful after the creator moves on.
 
@@ -50,11 +50,9 @@ Closed Tickets are hidden from the Dashboard by default.
 
 ## Goals and Roadmap to Production v1.0
 
-- Implement "Logged In Technician" to HTML templates. (Pending)
-- Implement Closed_timestamp. (Pending)
-- Implement ClosedBy value. (Pending)
-- Implement Technician-posted notes. (Not Started)
 - Implement standardized ```/var/log/goobydesk``` logging. (Not Started)
+- Tweak Discord Webhook message content. (Not Started)
+- Implement rate-limiting (Test env was subject to abuse)
 
 ### Linux Project Setup
 

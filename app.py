@@ -308,6 +308,23 @@ def update_ticket_status(ticket_number, ticket_status):
 
     return render_template("404.html"), 404  # If ticket not found.
 
+# Route for appending a new note to a ticket.
+@app.route("/ticket/<ticket_number>/append_note", methods=["POST"])
+def add_ticket_note(ticket_number):
+    new_tkt_note = request.form.get("note_content")  # Ensure the key matches the JS request
+
+    if not new_tkt_note:
+        return jsonify({"message": "Note content cannot be empty."}), 400
+
+    tickets = load_tickets()  # Load tickets into memory.
+
+    for ticket in tickets:
+        if ticket["ticket_number"] == ticket_number:
+            ticket["ticket_notes"].append(new_tkt_note)  # Append note
+            save_tickets(tickets)  # Save updates
+            return jsonify({"message": "Note added successfully."}), 200  # Return JSON response
+
+    return jsonify({"message": "Ticket not found."}), 404
 
 # Removes the session cookie from the user browser, sending the Technician/user back to the login page.
 @app.route("/logout")
