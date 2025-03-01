@@ -88,7 +88,20 @@
         .close-tkt-btn:hover {
         background-color: #1f356b;
         }
-
+        .addNote-btn {
+            background-color: #284389;
+            color: #fff;
+            font-size: 16px;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 48%;
+        }
+        .addNote-btn:hover {
+            background-color: #A8C0E2;
+        }
         .footer-text {
             font-size: 12px;
             color: #b7b7b7;
@@ -118,7 +131,7 @@
         <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'In-Progress')">Mark In-Progress</button>
         <button class="close-tkt-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Close Ticket</button>
         <textarea id="noteContent" placeholder="New note...."></textarea>
-        <button onclick="submitNote('{{ ticket.ticket_number }}')">Add Note</button>
+        <button class="addNote-btn" onclick="submitNote('{{ ticket.ticket_number }}')">Add Note</button>
         <!-- By keeping this script near the bottom of the page, this ensures all attributes load first.-->
         <!-- Script to enable status buttons. -->
         <script>
