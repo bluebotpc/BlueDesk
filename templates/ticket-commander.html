@@ -117,7 +117,10 @@
 
         <button class="status-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'In-Progress')">Mark In-Progress</button>
         <button class="close-tkt-btn" onclick="updateTicketStatus('{{ ticket.ticket_number }}', 'Closed')">Close Ticket</button>
+        <textarea id="noteContent" placeholder="New note...."></textarea>
+        <button onclick="submitNote('{{ ticket.ticket_number }}')">Add Note</button>
         <!-- By keeping this script near the bottom of the page, this ensures all attributes load first.-->
+        <!-- Script to enable status buttons. -->
         <script>
             function updateTicketStatus(ticketId, newStatus) {
                 if (!ticketId) {
@@ -138,5 +141,32 @@
         </script>
         <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a> | Logged In as: {{ loggedInTech }} | <a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
     </div>
+<!-- Script to append a note to the ticket. -->
+    <script>
+        async function submitNote(ticketNumber) {
+            let noteContent = document.getElementById("noteContent").value.trim();
+            if (!noteContent) {
+                alert("Note content cannot be empty.");
+                return;
+            }
+        
+            try {
+                let response = await fetch(`/ticket/${ticketNumber}/append_note`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                    body: new URLSearchParams({ note_content: noteContent }) // Ensure the key is "note_content"
+                });
+            
+                let data = await response.json();  // Parse JSON response
+                if (!response.ok) throw new Error(data.message || "Unknown error");
+            
+                alert(data.message);
+                location.reload(); // Refresh to show the new note
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to add note. Please try again.");
+            }
+        }
+    </script>
 </body>
 </html>
