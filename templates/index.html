@@ -124,6 +124,7 @@
         }
         */
     </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
     <div class="container">
@@ -167,7 +168,7 @@
                 <option value="Change">Change</option>
                 <option value="Access">Access</option>
             </select>
-
+            <div class="cf-turnstile" data-sitekey="0x4AAAAAAA_uZTxgKQNfTRfl" data-theme="light"></div>
             <button type="submit" class="submit-btn">Submit Ticket</button>
         </form>
         <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a> | <a href="{{ url_for('login') }}">Tech Login</a></p>
