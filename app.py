@@ -8,14 +8,14 @@ import email # Required to read the content of the emails.
 import threading # Background process.
 import time # Used for script sleeping.
 import logging
-import requests # CF Turnstiles
+import requests # CF Turnstiles.
 import os # Required to load DOTENV files.
 import fcntl # Unix file locking support.
-from dotenv import load_dotenv # Dependant on OS module
+from dotenv import load_dotenv # Dependant on OS module.
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
 from email.header import decode_header
-from datetime import datetime # Timestamps on tickets.
+from datetime import datetime # Timestamps.
 from local_webhook_handler import send_discord_notification # Webhook handler, local to this repo.
 from local_webhook_handler import send_TktUpdate_discord_notification # I need to find a better way to handle this import but I learned this new thing!
 
@@ -33,6 +33,7 @@ SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
 SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 LOG_FILE = os.getenv("LOG_FILE")
+CF_TURNSTILE_SITE_KEY = os.getenv("CF_TURNSTILE_SITE_KEY")
 CF_TURNSTILE_SECRET_KEY = os.getenv("CF_TURNSTILE_SECRET_KEY")
 
 # Standard Logging. basicConfig makes it reusable in other local py modules.
@@ -292,7 +293,7 @@ def home():
             print(f"CRITICAL ERROR - Failed to process ticket submission: {str(e)}")
             return "An error occurred while submitting your ticket. Please try again later.", 500
 
-    return render_template("index.html")
+    return render_template("index.html", sitekey=CF_TURNSTILE_SITE_KEY)
 
 # Route/routine for the technician login page/process.
 @app.route("/login", methods=["GET", "POST"])
