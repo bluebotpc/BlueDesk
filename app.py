@@ -312,7 +312,7 @@ def login():
             else:
                 return render_template("404.html"), 404 # Send our custom 404 page.
         
-    return render_template("login.html")
+    return render_template("login.html", sitekey=CF_TURNSTILE_SITE_KEY)
 
 # Route/routine for rendering the core technician dashboard. Displays all Open and In-Progress tickets.
 @app.route("/dashboard")
