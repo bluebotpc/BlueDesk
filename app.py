@@ -20,7 +20,7 @@ from local_webhook_handler import send_discord_notification # Webhook handler, l
 from local_webhook_handler import send_TktUpdate_discord_notification # I need to find a better way to handle this import but I learned this new thing!
 
 app = Flask(__name__)
-app.secret_key = "secretdemokey"
+app.secret_key = "thegardenisfullofcolorstosee"
 
 # Load environment variables from .env in the local folder.
 load_dotenv(dotenv_path=".env")
