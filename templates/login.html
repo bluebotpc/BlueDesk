@@ -56,7 +56,7 @@
         }
 
         input {
-            width: 100%;
+            width: 90%;
             padding: 8px;
             margin-top: 5px;
             border: 1px solid #ccc;
@@ -86,6 +86,7 @@
             margin-top: 20px;
         }
     </style>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
     <div class="container">
@@ -99,10 +100,13 @@
 
             <label for="password">Password:</label>
             <input type="password" id="password" name="tech_password_box" placeholder="Secret" required>
+            <br><br>
+
+            <div class="cf-turnstile" data-sitekey="{{ sitekey }}" data-theme="dark"></div>
 
             <button type="submit" class="submit-btn">Login</button>
         </form>
-        <p class="footer-text">©2025 GoobyDesk, FOSS by <a href="https://www.bluebotpc.com/">BlueBotPC</a></p>
+        <p class="footer-text">©2025 GoobyDesk, FOSS created by <a href="https://github.com/bluebotpc">Gooby</a></p>
     </div>
 </body>
 </html>

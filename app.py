@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, flash
 import json # My preffered method of "database" replacements.
 import smtplib # Required protocol for sending emails by code.
 import imaplib # Required protocol for receiving/logging into email provider.
@@ -7,18 +7,20 @@ import re # Regex support for reading emails and subject lines.
 import email # Required to read the content of the emails.
 import threading # Background process.
 import time # Used for script sleeping.
+import logging
+import requests # CF Turnstiles.
 import os # Required to load DOTENV files.
 import fcntl # Unix file locking support.
-from dotenv import load_dotenv # Dependant on OS module
+from dotenv import load_dotenv # Dependant on OS module.
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
 from email.header import decode_header
-from datetime import datetime # Timestamps on tickets.
+from datetime import datetime # Timestamps.
 from local_webhook_handler import send_discord_notification # Webhook handler, local to this repo.
 from local_webhook_handler import send_TktUpdate_discord_notification # I need to find a better way to handle this import but I learned this new thing!
 
 app = Flask(__name__)
-app.secret_key = "secretdemokey"
+app.secret_key = "thegardenisfullofcolorstosee"
 
 # Load environment variables from .env in the local folder.
 load_dotenv(dotenv_path=".env")
@@ -30,6 +32,12 @@ EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD") # App Password
 SMTP_SERVER = os.getenv("SMTP_SERVER") # Provider SMTP Server Address.
 SMTP_PORT = os.getenv("SMTP_PORT") # Provider SMTP Server Port. Default is TCP/587.
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
+LOG_FILE = os.getenv("LOG_FILE")
+CF_TURNSTILE_SITE_KEY = os.getenv("CF_TURNSTILE_SITE_KEY")
+CF_TURNSTILE_SECRET_KEY = os.getenv("CF_TURNSTILE_SECRET_KEY")
+
+# Standard Logging. basicConfig makes it reusable in other local py modules.
+logging.basicConfig(filename="LOG_FILE", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Read/Loads the ticket file into memory. This is the original load_tickets function that works on Windows and Unix.
 #def load_tickets():
@@ -51,9 +59,11 @@ def load_tickets(retries=5, delay=0.2):
                fcntl.flock(file, fcntl.LOCK_UN)  # Unlock the file.
                return tickets
        except (json.JSONDecodeError, FileNotFoundError) as e:
+           logging.critical(f"Error loading tickets: {e}")
            print(f"ERROR - Error loading tickets: {e}")
            return []
        except BlockingIOError:
+           logging.warning(f"File is locked, retrying... ({attempt+1}/{retries})")
            print(f"DEBUG - File is locked, retrying... ({attempt+1}/{retries})")
            time.sleep(delay)  # Wait before retrying
    raise Exception("ERROR - Failed to load tickets after multiple attempts.")
@@ -97,7 +107,9 @@ def send_email(requestor_email, ticket_subject, ticket_message, html=True):
             server.login(EMAIL_ACCOUNT, EMAIL_PASSWORD)
             server.sendmail(EMAIL_ACCOUNT, requestor_email, msg.as_string())
     except Exception as e:
+        logging.error(f"Email sending failed: {e}")
         print(f"ERROR - Email sending failed: {e}")
+    logging.info(f"Confirmation Email sent to {requestor_email}")
     print(f"INFO - Confirmation Email sent to {requestor_email}")
 
 # extract_email_body is attempting to scrape the content of the "valid" TKT email replies. It skips attachments. I do not currently need this feature. 
@@ -116,18 +128,21 @@ def extract_email_body(msg):
                 try:
                     body = part.get_payload(decode=True).decode(errors="ignore").strip()
                 except Exception as e:
+                    logging.error(f"Error decoding email part: {e}")
                     print(f"ERROR - Error decoding email part: {e}")
                     continue
             elif content_type == "text/html" and not body:
                 try:
                     body = part.get_payload(decode=True).decode(errors="ignore").strip()
                 except Exception as e:
+                    logging.error(f"Error decoding HTML part: {e}")
                     print(f"ERROR - Error decoding HTML part: {e}")
                     continue
     else:
         try:
             body = msg.get_payload(decode=True).decode(errors="ignore").strip()
         except Exception as e:
+            logging.error(f"Error decoding single-part email: {e}")
             print(f"ERROR - Error decoding single-part email: {e}")
 
     return body
@@ -141,6 +156,7 @@ def fetch_email_replies():
 
         mail_server_response_status, messages = mail.search(None, "UNSEEN")  
         if mail_server_response_status != "OK":
+            logging.debug("Reading Inbox via IMAP failed for an unknown reason.")
             print("DEBUG - Reading Inbox via IMAP failed for an unknown reason.")
             return
 
@@ -151,6 +167,7 @@ def fetch_email_replies():
             email_id = email_id.decode()  # Ensure it's a string
             mail_server_response_status, msg_data = mail.fetch(email_id, "(RFC822)")
             if mail_server_response_status != "OK" or not msg_data:
+                logging.error(f"Unable to fetch email {email_id}")
                 print(f"ERROR - Unable to fetch email {email_id}")
                 continue  
 
@@ -163,7 +180,8 @@ def fetch_email_replies():
 
                     from_email = msg.get("From")
                     match_ticket_reply = re.search(r"(?i)\bTKT-\d{4}-\d+\b", subject)
-                    ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None  
+                    ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None
+                    logging.debug(f"Extracted ticket ID: {ticket_id} from subject: {subject}")  
                     print(f"DEBUG - Extracted ticket ID: {ticket_id} from subject: {subject}")
 
                     if not ticket_id:
@@ -174,16 +192,19 @@ def fetch_email_replies():
                     for ticket in tickets:
                         if ticket["ticket_number"] == ticket_id:
                             ticket["ticket_notes"].append({"ticket_message": body})
-                            save_tickets(tickets)  
+                            save_tickets(tickets) 
+                            logging.debug(f"Updated ticket {ticket_id} with reply from {from_email}") 
                             print(f"DEBUG - Updated ticket {ticket_id} with reply from {from_email}")
                             break
                         
-        mail.logout()  
+        mail.logout()
+        logging.info("Email fetch job completed successfully.")
         print("INFO - Email fetch job completed successfully.")
     except Exception as e:
+        logging.error(f"Error fetching emails: {e}")
         print(f"ERROR - Error fetching emails: {e}")
 
-# Background email monitoring
+# Background email monitoring. This is a running process using modules above.
 def background_email_monitor():
     while True:
         fetch_email_replies()
@@ -191,51 +212,88 @@ def background_email_monitor():
 
 threading.Thread(target=background_email_monitor, daemon=True).start()
 
-# BELOW THIS LINE IS RESERVED FOR FLASK APP ROUTES
-# This is the "default" route for the home/index/landing page. This is where users submit a ticket.
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
-        requestor_name = request.form["requestor_name"]
-        requestor_email = request.form["requestor_email"]
-        ticket_subject = request.form["ticket_subject"]
-        ticket_message = request.form["ticket_message"]
-        ticket_impact = request.form["ticket_impact"]
-        ticket_urgency = request.form["ticket_urgency"]
-        request_type = request.form["request_type"]
-        ticket_number = generate_ticket_number()
-        
-        new_ticket = {
-            "ticket_number": ticket_number,
-            "requestor_name": requestor_name,
-            "requestor_email": requestor_email,
-            "ticket_subject": ticket_subject,
-            "ticket_message": ticket_message,
-            "request_type": request_type,
-            "ticket_impact": ticket_impact,
-            "ticket_urgency": ticket_urgency,
-            "ticket_status": "Open",
-            "submission_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "ticket_notes": []
-        }
-        
-        tickets = load_tickets()
-        tickets.append(new_ticket)
-        print(f"INFO - a new {ticket_number} has been created")
-        save_tickets(tickets)
-        
-        # Render the HTML email template
-        email_body = render_template("/new-ticket-email.html", ticket=new_ticket)
+        try:
+            # Cloudflare Turnstile CAPTCHA validation
+            turnstile_token = request.form.get("cf-turnstile-response")
+            if not turnstile_token:
+                flash("CAPTCHA verification failed. Please try again.", "danger")
+                return redirect(url_for("home"))
 
-        # Send the email with HTML format
-        send_email(requestor_email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
+            turnstile_url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+            turnstile_data = {
+                "secret": CF_TURNSTILE_SECRET_KEY,
+                "response": turnstile_token,
+                "remoteip": request.remote_addr
+            }
 
-        # Send a Discord webhook notification.
-        send_discord_notification(ticket_number, ticket_message)
-        
-        return redirect(url_for("home"))
-    
-    return render_template("index.html")
+            try:
+                turnstile_response = requests.post(turnstile_url, data=turnstile_data)
+                result = turnstile_response.json()
+                if not result.get("success"):
+                    logging.warning(f"Turnstile verification failed: {result}")
+                    flash("CAPTCHA verification failed. Please try again.", "danger")
+                    return redirect(url_for("home"))
+            except Exception as e:
+                logging.error(f"Turnstile verification error: {str(e)}")
+                flash("Error verifying CAPTCHA. Please try again later.", "danger")
+                return redirect(url_for("home"))
+
+            # Process ticket submission
+            requestor_name = request.form["requestor_name"]
+            requestor_email = request.form["requestor_email"]
+            ticket_subject = request.form["ticket_subject"]
+            ticket_message = request.form["ticket_message"]
+            ticket_impact = request.form["ticket_impact"]
+            ticket_urgency = request.form["ticket_urgency"]
+            request_type = request.form["request_type"]
+            ticket_number = generate_ticket_number()
+
+            new_ticket = {
+                "ticket_number": ticket_number,
+                "requestor_name": requestor_name,
+                "requestor_email": requestor_email,
+                "ticket_subject": ticket_subject,
+                "ticket_message": ticket_message,
+                "request_type": request_type,
+                "ticket_impact": ticket_impact,
+                "ticket_urgency": ticket_urgency,
+                "ticket_status": "Open",
+                "submission_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "ticket_notes": []
+            }
+
+            tickets = load_tickets()
+            tickets.append(new_ticket)
+            logging.info(f"{ticket_number} has been created.")
+            print(f"INFO - a new {ticket_number} has been created.")
+            save_tickets(tickets)
+
+            # Send the email with error han dling
+            try:
+                email_body = render_template("/new-ticket-email.html", ticket=new_ticket)
+                send_email(requestor_email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
+            except Exception as e:
+                logging.error(f"Failed to send email for {ticket_number}: {str(e)}")
+                print(f"ERROR - Failed to send email for {ticket_number}: {str(e)}")
+
+            # Send a Discord webhook notification with error handling
+            try:
+                send_discord_notification(ticket_number, ticket_message)
+            except Exception as e:
+                logging.error(f"Failed to send Discord notification for {ticket_number}: {str(e)}")
+                print(f"ERROR - Failed to send Discord notification for {ticket_number}: {str(e)}")
+
+            return redirect(url_for("home"))
+
+        except Exception as e:
+            logging.critical(f"Failed to process ticket submission: {str(e)}")
+            print(f"CRITICAL ERROR - Failed to process ticket submission: {str(e)}")
+            return "An error occurred while submitting your ticket. Please try again later.", 500
+
+    return render_template("index.html", sitekey=CF_TURNSTILE_SITE_KEY)
 
 # Route/routine for the technician login page/process.
 @app.route("/login", methods=["GET", "POST"])
@@ -254,7 +312,7 @@ def login():
             else:
                 return render_template("404.html"), 404 # Send our custom 404 page.
         
-    return render_template("login.html")
+    return render_template("login.html", sitekey=CF_TURNSTILE_SITE_KEY)
 
 # Route/routine for rendering the core technician dashboard. Displays all Open and In-Progress tickets.
 @app.route("/dashboard")
@@ -283,7 +341,7 @@ def ticket_detail(ticket_number):
 
 # Route/routine for updating a ticket. Called from Dashboard and Ticket Commander.
 @app.route("/ticket/<ticket_number>/update_status/<ticket_status>", methods=["POST"])
-def update_ticket_status(ticket_number, ticket_status):
+def update_ticket_status(ticket_number, ticket_status): 
     if not session.get("technician"):  # Ensure only authenticated techs can update tickets.
         return render_template("403.html"), 403
     

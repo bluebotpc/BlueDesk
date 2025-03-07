@@ -1,5 +1,7 @@
 # CHANGELOG
 
+**Mar.06.2025-1:** Implement standard logging and Cloudflare Turnstile spam prevention.
+
 **Feb.28.2025-1:** Implementing a method of posting notes to a ticket in Ticket Commander.
 
 **Feb.27.2025-1:** Implement "Logged In As" and other navigation links.

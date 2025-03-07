@@ -6,3 +6,6 @@ SMTP_PORT=587
 TICKETS_FILE=tickets.json
 EMPLOYEE_FILE=employee.json
 DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/XXXXX/YYYYY"
+LOG_FILE=/var/log/goobyDesk.log
+CF_TURNSTILE_SITE_KEY=01234567890
+CF_TURNSTILE_SECRET_KEY=abcdefghijklmnopqrstuvwxyz
