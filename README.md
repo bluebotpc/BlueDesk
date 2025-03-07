@@ -8,7 +8,7 @@ Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and O
 
 ## What is GoobyDesk
 
-GoobyDesk is a Python3, Flask-based web application.
+GoobyDesk is a Python3, Flask-based web application. Leverages Cloudflare Turnstile for Anti-Spam/Brute force protection.
 
 - By default, the Flask app will run at ```http://127.0.0.1:5000``` during local development.
 - Production instances should be ran behind a Python3 WSGI server such as [Gunicorn](https://gunicorn.org/).
