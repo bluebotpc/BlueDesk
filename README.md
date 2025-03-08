@@ -90,16 +90,20 @@ CTRL+C to break. ```deactivate``` to clean up.
 
 #### Login
 
-![Login-GHWiki](https://github.com/user-attachments/assets/0d538988-e36a-4cdb-9126-bd93c1f9aa53)
+![LoginCF-GHWiki](https://github.com/user-attachments/assets/ed15c2ca-4409-49c4-9285-8fab243a74c0)
 
 #### Dashboard
 
 ![Dashboard-GHWiki](https://github.com/user-attachments/assets/b72367bd-b2f5-47bf-8b18-6e56f0a7bbe3)
 
+#### Ticket Commander
+
+![TktCommander-GHWiki](https://github.com/user-attachments/assets/d9ad4f04-f8f0-4ec3-99a1-e21bc74b0ee7)
+
+#### Discord Notifications
+
+![Discord-GHWiki](https://github.com/user-attachments/assets/828e559d-f7f2-4acc-b47b-5c6b621fe95f)
+
 #### Confirmation Email Template
 
 ![FirstEmail-GHWiki](https://github.com/user-attachments/assets/9fa30684-ab70-49b9-b897-1fb106802c06)
-
-#### Ticket Commander
-
-![TktCommander-GHWiki](https://github.com/user-attachments/assets/2d08aa6d-35b7-44f3-8381-3d4983aee59b)
