@@ -257,10 +257,10 @@ def home():
 
             tickets = load_tickets()
             tickets.append(new_ticket)
-            logging.info(f"{ticket_number} has been created.")
             save_tickets(tickets)
+            logging.info(f"{ticket_number} has been created.")
 
-            # Send the email with error han dling
+            # Attempt to send a Confirmation Email via SMTP with logging and graceful error handling.
             try:
                 email_body = render_template("/new-ticket-email.html", ticket=new_ticket)
                 send_email(requestor_email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
@@ -268,18 +268,19 @@ def home():
             except Exception as e:
                 logging.error(f"Failed to send email for {ticket_number}: {str(e)}")
 
-            # Send a Discord webhook notification with error handling
+            # Attempt to send a Discord webhook notification with logging and graceful error handling.
             try:
                 send_discord_notification(ticket_number, ticket_subject, ticket_message)
             except Exception as e:
                 logging.error(f"Failed to send Discord notification for {ticket_number}: {str(e)}")
-
+            # Prompt the users web interface of a successful ticket submission.
+            flash(f"Ticket {ticket_number} has been submitted successfully!", "success")
             return redirect(url_for("home"))
 
         except Exception as e:
             logging.critical(f"Failed to process ticket submission: {str(e)}")
             return "An error occurred while submitting your ticket. Please try again later.", 500
-
+    # Refresh and Reload the Home/Index
     return render_template("index.html", sitekey=CF_TURNSTILE_SITE_KEY)
 
 # Route/routine for the technician login page/process.
