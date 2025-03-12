@@ -275,13 +275,14 @@ def home():
             try:
                 email_body = render_template("/new-ticket-email.html", ticket=new_ticket)
                 send_email(requestor_email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
+                logging.info(f"Confirmation Email for {ticket_number} sent successfully.")
             except Exception as e:
                 logging.error(f"Failed to send email for {ticket_number}: {str(e)}")
                 print(f"ERROR - Failed to send email for {ticket_number}: {str(e)}")
 
             # Send a Discord webhook notification with error handling
             try:
-                send_discord_notification(ticket_number, ticket_message)
+                send_discord_notification(ticket_number, ticket_subject, ticket_message)
             except Exception as e:
                 logging.error(f"Failed to send Discord notification for {ticket_number}: {str(e)}")
                 print(f"ERROR - Failed to send Discord notification for {ticket_number}: {str(e)}")

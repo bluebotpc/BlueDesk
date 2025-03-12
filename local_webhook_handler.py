@@ -10,7 +10,7 @@ load_dotenv(dotenv_path=".env")
 DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
 # Sends a Discord webhook notification when a new ticket is created.
-def send_discord_notification(ticket_number, ticket_message):
+def send_discord_notification(ticket_number, ticket_subject, ticket_message):
     if not DISCORD_WEBHOOK_URL:
         logging.warning("WEBHOOK HANDLER - DISCORD_WEBHOOK_URL is not set. Check your .env file.")
         print("WARNING - WEBHOOK HANDLER - DISCORD_WEBHOOK_URL is not set. Check your .env file.")
@@ -21,7 +21,7 @@ def send_discord_notification(ticket_number, ticket_message):
         
         "embeds": [
             {
-                "title": f"New Ticket Created: {ticket_number}",
+                "title": f"New Ticket Created: {ticket_number} - {ticket_subject}",
                 "description": f"**Details:** {ticket_message}",
                 "color": 5814783,  # Light Blue # decimal representation of a hexadecimal color code
             }
