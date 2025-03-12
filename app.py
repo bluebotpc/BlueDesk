@@ -368,7 +368,7 @@ def add_ticket_note(ticket_number):
         if ticket["ticket_number"] == ticket_number:
             ticket["ticket_notes"].append(new_tkt_note)  # Append note
             save_tickets(tickets)  # Save updates
-            logging.debug(f"Note successfully appended to {ticket_number}.")
+            logging.info(f"Note successfully appended to {ticket_number}.")
             return jsonify({"message": "Note added successfully."}), 200  # Return JSON response
 
     return jsonify({"message": "Ticket not found."}), 404

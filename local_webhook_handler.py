@@ -34,9 +34,9 @@ def send_discord_notification(ticket_number, ticket_subject, ticket_message):
         response.raise_for_status()  # Raise exception for HTTP errors
         
         if response.status_code == 204:
-            logging.info(f"INFO - WEBHOOK HANDLER - New Ticket {ticket_number} notification sent to Discord.")
+            logging.info(f"WEBHOOK HANDLER - New Ticket {ticket_number} notification sent to Discord.")
         else:
-            logging.warning(f"WARNING - WEBHOOK HANDLER - Unexpected response code: {response.status_code}")
+            logging.warning(f"WEBHOOK HANDLER - Unexpected response code: {response.status_code}")
 
     except requests.exceptions.ConnectionError:
         logging.error("WEBHOOK HANDLER - Failed to connect to Discord. Check internet and webhook URL.")
