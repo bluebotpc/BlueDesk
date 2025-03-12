@@ -63,8 +63,7 @@ def load_tickets(retries=5, delay=0.2):
            print(f"ERROR - Error loading tickets: {e}")
            return []
        except BlockingIOError:
-           logging.warning(f"File is locked, retrying... ({attempt+1}/{retries})")
-           print(f"DEBUG - File is locked, retrying... ({attempt+1}/{retries})")
+           logging.critical(f"File is locked, retrying... ({attempt+1}/{retries})")
            time.sleep(delay)  # Wait before retrying
    raise Exception("ERROR - Failed to load tickets after multiple attempts.")
 
@@ -72,6 +71,7 @@ def load_tickets(retries=5, delay=0.2):
 def save_tickets(tickets):
     with open(TICKETS_FILE, "w") as tkt_file_write_op:
         json.dump(tickets, tkt_file_write_op, indent=4)
+        logging.debug("The ticket database file was modified.")
 
 # Read/Loads the employee file into memory.
 def load_employees():
@@ -79,6 +79,7 @@ def load_employees():
         with open(EMPLOYEE_FILE, "r") as tech_file_read_op:
             return json.load(tech_file_read_op)
     except FileNotFoundError:
+        logging.debug("Employee Database file could not be located. Check your .env config file.")
         return {} # represents an empty dictionary.
 
 # Generate a new ticket number.
@@ -108,12 +109,10 @@ def send_email(requestor_email, ticket_subject, ticket_message, html=True):
             server.sendmail(EMAIL_ACCOUNT, requestor_email, msg.as_string())
     except Exception as e:
         logging.error(f"Email sending failed: {e}")
-        print(f"ERROR - Email sending failed: {e}")
     logging.info(f"Confirmation Email sent to {requestor_email}")
-    print(f"INFO - Confirmation Email sent to {requestor_email}")
 
 # extract_email_body is attempting to scrape the content of the "valid" TKT email replies. It skips attachments. I do not currently need this feature. 
-def extract_email_body(msg):
+def extract_email_body(msg): 
     body = ""
     
     if msg.is_multipart():
@@ -128,22 +127,19 @@ def extract_email_body(msg):
                 try:
                     body = part.get_payload(decode=True).decode(errors="ignore").strip()
                 except Exception as e:
-                    logging.error(f"Error decoding email part: {e}")
-                    print(f"ERROR - Error decoding email part: {e}")
+                    logging.warning(f"Error decoding email part: {e}")
                     continue
             elif content_type == "text/html" and not body:
                 try:
                     body = part.get_payload(decode=True).decode(errors="ignore").strip()
                 except Exception as e:
-                    logging.error(f"Error decoding HTML part: {e}")
-                    print(f"ERROR - Error decoding HTML part: {e}")
+                    logging.warning(f"Error decoding HTML part: {e}")
                     continue
     else:
         try:
             body = msg.get_payload(decode=True).decode(errors="ignore").strip()
         except Exception as e:
             logging.error(f"Error decoding single-part email: {e}")
-            print(f"ERROR - Error decoding single-part email: {e}")
 
     return body
 
@@ -156,8 +152,7 @@ def fetch_email_replies():
 
         mail_server_response_status, messages = mail.search(None, "UNSEEN")  
         if mail_server_response_status != "OK":
-            logging.debug("Reading Inbox via IMAP failed for an unknown reason.")
-            print("DEBUG - Reading Inbox via IMAP failed for an unknown reason.")
+            logging.error("Reading Inbox via IMAP failed for an unknown reason.")
             return
 
         email_ids = messages[0].split()
@@ -167,8 +162,7 @@ def fetch_email_replies():
             email_id = email_id.decode()  # Ensure it's a string
             mail_server_response_status, msg_data = mail.fetch(email_id, "(RFC822)")
             if mail_server_response_status != "OK" or not msg_data:
-                logging.error(f"Unable to fetch email {email_id}")
-                print(f"ERROR - Unable to fetch email {email_id}")
+                logging.warning(f"Unable to fetch email {email_id}")
                 continue  
 
             for response_part in msg_data:
@@ -182,7 +176,6 @@ def fetch_email_replies():
                     match_ticket_reply = re.search(r"(?i)\bTKT-\d{4}-\d+\b", subject)
                     ticket_id = match_ticket_reply.group(0) if match_ticket_reply else None
                     logging.debug(f"Extracted ticket ID: {ticket_id} from subject: {subject}")  
-                    print(f"DEBUG - Extracted ticket ID: {ticket_id} from subject: {subject}")
 
                     if not ticket_id:
                         continue  
@@ -194,15 +187,12 @@ def fetch_email_replies():
                             ticket["ticket_notes"].append({"ticket_message": body})
                             save_tickets(tickets) 
                             logging.debug(f"Updated ticket {ticket_id} with reply from {from_email}") 
-                            print(f"DEBUG - Updated ticket {ticket_id} with reply from {from_email}")
                             break
                         
         mail.logout()
-        logging.info("Email fetch job completed successfully.")
-        print("INFO - Email fetch job completed successfully.")
+        logging.debug("Email fetch job completed successfully.")
     except Exception as e:
         logging.error(f"Error fetching emails: {e}")
-        print(f"ERROR - Error fetching emails: {e}")
 
 # Background email monitoring. This is a running process using modules above.
 def background_email_monitor():
@@ -268,7 +258,6 @@ def home():
             tickets = load_tickets()
             tickets.append(new_ticket)
             logging.info(f"{ticket_number} has been created.")
-            print(f"INFO - a new {ticket_number} has been created.")
             save_tickets(tickets)
 
             # Send the email with error han dling
@@ -278,20 +267,17 @@ def home():
                 logging.info(f"Confirmation Email for {ticket_number} sent successfully.")
             except Exception as e:
                 logging.error(f"Failed to send email for {ticket_number}: {str(e)}")
-                print(f"ERROR - Failed to send email for {ticket_number}: {str(e)}")
 
             # Send a Discord webhook notification with error handling
             try:
                 send_discord_notification(ticket_number, ticket_subject, ticket_message)
             except Exception as e:
                 logging.error(f"Failed to send Discord notification for {ticket_number}: {str(e)}")
-                print(f"ERROR - Failed to send Discord notification for {ticket_number}: {str(e)}")
 
             return redirect(url_for("home"))
 
         except Exception as e:
             logging.critical(f"Failed to process ticket submission: {str(e)}")
-            print(f"CRITICAL ERROR - Failed to process ticket submission: {str(e)}")
             return "An error occurred while submitting your ticket. Please try again later.", 500
 
     return render_template("index.html", sitekey=CF_TURNSTILE_SITE_KEY)
@@ -363,6 +349,7 @@ def update_ticket_status(ticket_number, ticket_status):
 
             save_tickets(tickets)  # Save the updated tickets.
             send_TktUpdate_discord_notification(ticket_number, ticket_status)  # Updated notification.
+            logging.debug(f"Ticket {ticket_number} updated to {ticket_status}.")
             return jsonify({"message": f"Ticket {ticket_number} updated to {ticket_status}."})  # Success popup.
 
     return render_template("404.html"), 404  # If ticket not found.
@@ -381,6 +368,7 @@ def add_ticket_note(ticket_number):
         if ticket["ticket_number"] == ticket_number:
             ticket["ticket_notes"].append(new_tkt_note)  # Append note
             save_tickets(tickets)  # Save updates
+            logging.debug(f"Note successfully appended to {ticket_number}.")
             return jsonify({"message": "Note added successfully."}), 200  # Return JSON response
 
     return jsonify({"message": "Ticket not found."}), 404
