@@ -37,7 +37,7 @@ CF_TURNSTILE_SITE_KEY = os.getenv("CF_TURNSTILE_SITE_KEY")
 CF_TURNSTILE_SECRET_KEY = os.getenv("CF_TURNSTILE_SECRET_KEY")
 
 # Standard Logging. basicConfig makes it reusable in other local py modules.
-logging.basicConfig(filename="LOG_FILE", level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Read/Loads the ticket file into memory. This is the original load_tickets function that works on Windows and Unix.
 #def load_tickets():
