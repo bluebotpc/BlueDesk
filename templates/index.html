@@ -102,6 +102,17 @@
         .submit-btn:hover {
             background-color: #A8C0E2;
         }
+        .alert {
+            background-color: green;
+            color: #fff;
+            font-size: 16px;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 48%;
+        }
 
         .footer-text {
             font-size: 12px;
@@ -125,6 +136,13 @@
         */
     </style>
 <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<!-- Ticket Submission Confirmation Flash fade out.-->
+<script>
+    setTimeout(function() {
+      let alerts = document.querySelectorAll(".alert");
+      alerts.forEach(alert => alert.style.display = "none");
+    }, 5000);  // Hides after 5 seconds
+  </script>
 </head>
 <body>
     <div class="container">
@@ -173,6 +191,15 @@
 
             <button type="submit" class="submit-btn">Submit Ticket</button>
         </form>
+        {% with messages = get_flashed_messages(with_categories=True) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">
+                {{ message }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
         <p class="footer-text">©2025 GoobyDesk, FOSS created by <a href="https://github.com/bluebotpc">Gooby</a> | <a href="{{ url_for('login') }}">Tech Login</a></p>
     </div>
 </body>
