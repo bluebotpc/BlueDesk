@@ -1,14 +1,12 @@
-# GoobyDesk
+# BlueDesk
 
 Simple, Lightweight, Databaseless Service Desk for Home Labbers, Families, and One Man MSPs.
 
-**Current Version:**  v0.5.1
+**Current Version:**  v0.6.0
 
-[GoobyDesk Repo Wiki](https://github.com/GoobyFRS/GoobyDesk/wiki) & [Production Deployment Guide](https://github.com/GoobyFRS/GoobyDesk/wiki/Production-Deployment-Guide).
+## What is BlueDesk
 
-## What is GoobyDesk
-
-GoobyDesk is a Python3, Flask-based web application. Leverages Cloudflare Turnstile for Anti-Spam/Brute force protection.
+BlueDesk is a Python3, Flask-based web application. Leverages Cloudflare Turnstile for Anti-Spam/Brute force protection.
 
 - By default, the Flask app will run at ```http://127.0.0.1:5000``` during local development.
 - Production instances should be ran behind a Python3 WSGI server such as [Gunicorn](https://gunicorn.org/).
@@ -48,11 +46,6 @@ Support for multiple technicians.
 
 Closed Tickets are hidden from the Dashboard by default.
 
-## Goals and Roadmap to Production v1.0
-
-- Tweak Discord Webhook message content. (Not Started)
-- Implement rate-limiting (Test env was subject to abuse)
-
 ### Linux Project Setup
 
 ```shell
@@ -82,28 +75,3 @@ python app.py
 
 CTRL+C to break. ```deactivate``` to clean up.
 
-### Screenshots
-
-#### Landing Page
-
-![Index-GHWiki](https://github.com/user-attachments/assets/6dfde191-1c8f-4c15-8c72-5544f06d17a9)
-
-#### Login
-
-![LoginCF-GHWiki](https://github.com/user-attachments/assets/ed15c2ca-4409-49c4-9285-8fab243a74c0)
-
-#### Dashboard
-
-![Dashboard-GHWiki](https://github.com/user-attachments/assets/b72367bd-b2f5-47bf-8b18-6e56f0a7bbe3)
-
-#### Ticket Commander
-
-![TktCommander-GHWiki](https://github.com/user-attachments/assets/d9ad4f04-f8f0-4ec3-99a1-e21bc74b0ee7)
-
-#### Discord Notifications
-
-![Discord-GHWiki](https://github.com/user-attachments/assets/828e559d-f7f2-4acc-b47b-5c6b621fe95f)
-
-#### Confirmation Email Template
-
-![FirstEmail-GHWiki](https://github.com/user-attachments/assets/9fa30684-ab70-49b9-b897-1fb106802c06)

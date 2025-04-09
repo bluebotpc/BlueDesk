@@ -16,7 +16,7 @@ def send_discord_notification(ticket_number, ticket_subject, ticket_message):
         return
     
     data = {
-        "username": "GoobyDesk",
+        "username": "BlueDesk",
         
         "embeds": [
             {
@@ -52,7 +52,7 @@ def send_TktUpdate_discord_notification(ticket_number, ticket_status):
         return
     
     data = {
-        "username": "GoobyDesk",
+        "username": "BlueDesk",
         
         "embeds": [
             {

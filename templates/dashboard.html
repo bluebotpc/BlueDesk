@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#284389"> <!-- Mobile Browser stylized address bar.-->
     <meta http-equiv="X-UA-Compatible" content="IE=edge"> <!-- Force IE to use latest rendering engine available.-->
     <meta http-equiv="refresh" content="600"> <!-- 10 Minute Page Refresh -->
-    <title>GoobyDesk - Technician Dashboard</title>
+    <title>BlueDesk - Technician Dashboard</title>
     <!-- Style/CSS goes in the HTML5 head -->
     <style>
         * {
@@ -119,7 +119,7 @@
         <div class="logo">
             <img src="https://mattfaulkner.us-southeast-1.linodeobjects.com/GoobyDesk-color.webp" alt=" GoobyDesk Logo">
         </div>
-        <h2>GoobyDesk Technician Dashboard</h2>
+        <h2>BlueDesk Technician Dashboard</h2>
         <ul class="ticket-list">
             {% for ticket in tickets %}
                 <li>
@@ -170,7 +170,7 @@
         <!-- Technician logout button -->
         <a href="{{ url_for('logout') }}" class="logout-btn">Logout</a>
         <!-- Footer Text -->
-        <p class="footer-text">©2025 GoobyDesk, FOSS created by <a href="https://github.com/bluebotpc">Gooby</a> | Logged In as: {{ loggedInTech }}</p>
+        <p class="footer-text">©2025 BlueDesk, FOSS created by <a href="https://github.com/bluebotpc">BlueBotPC</a> | Logged In as: {{ loggedInTech }}</p>
     </div>
 </body>
 </html>

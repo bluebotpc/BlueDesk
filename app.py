@@ -10,7 +10,7 @@ import time # Used for script sleeping.
 import logging
 import requests # CF Turnstiles.
 import os # Required to load DOTENV files.
-import fcntl # Unix file locking support.
+#import fcntl # Unix file locking support.
 from dotenv import load_dotenv # Dependant on OS module.
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart # Required for new-ticket-email.html
@@ -20,7 +20,7 @@ from local_webhook_handler import send_discord_notification # Webhook handler, l
 from local_webhook_handler import send_TktUpdate_discord_notification # I need to find a better way to handle this import but I learned this new thing!
 
 app = Flask(__name__)
-app.secret_key = "thegardenisfullofcolorstosee"
+app.secret_key = "InternalTesting"
 
 # Load environment variables from .env in the local folder.
 load_dotenv(dotenv_path=".env")
@@ -40,32 +40,31 @@ CF_TURNSTILE_SECRET_KEY = os.getenv("CF_TURNSTILE_SECRET_KEY")
 logging.basicConfig(filename=LOG_FILE, level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 # Read/Loads the ticket file into memory. This is the original load_tickets function that works on Windows and Unix.
-#def load_tickets():
-#    try:
-#        with open(TICKETS_FILE, "r") as tkt_file:
-#            return json.load(tkt_file)
-#    except FileNotFoundError:
-#        return [] # represents an empty list.
+def load_tickets():
+    try:
+        with open(TICKETS_FILE, "r") as tkt_file:
+            return json.load(tkt_file)
+    except FileNotFoundError:
+        return [] # represents an empty list.
 
 # This load_tickets function contains the file locking mechanism for Linux.
- 
-def load_tickets(retries=5, delay=0.2):
-   # Load tickets from JSON file with file locking and retry logic.
-   for attempt in range(retries):
-       try:
-           with open(TICKETS_FILE, "r") as file:
-               fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
-               tickets = json.load(file)
-               fcntl.flock(file, fcntl.LOCK_UN)  # Unlock the file.
-               return tickets
-       except (json.JSONDecodeError, FileNotFoundError) as e:
-           logging.critical(f"Error loading tickets: {e}")
-           print(f"ERROR - Error loading tickets: {e}")
-           return []
-       except BlockingIOError:
-           logging.critical(f"File is locked, retrying... ({attempt+1}/{retries})")
-           time.sleep(delay)  # Wait before retrying
-   raise Exception("ERROR - Failed to load tickets after multiple attempts.")
+#def load_tickets(retries=5, delay=0.2):
+#   # Load tickets from JSON file with file locking and retry logic.
+#   for attempt in range(retries):
+#       try:
+#           with open(TICKETS_FILE, "r") as file:
+#               fcntl.flock(file, fcntl.LOCK_SH)  # Shared lock for reading
+#               tickets = json.load(file)
+#               fcntl.flock(file, fcntl.LOCK_UN)  # Unlock the file.
+#               return tickets
+#       except (json.JSONDecodeError, FileNotFoundError) as e:
+#           logging.critical(f"Error loading tickets: {e}")
+#           print(f"ERROR - Error loading tickets: {e}")
+#           return []
+#       except BlockingIOError:
+#           logging.critical(f"File is locked, retrying... ({attempt+1}/{retries})")
+#           time.sleep(delay)  # Wait before retrying
+#   raise Exception("ERROR - Failed to load tickets after multiple attempts.")
 
 # Writes to the ticket file database.
 def save_tickets(tickets):
@@ -283,6 +282,84 @@ def home():
     # Refresh and Reload the Home/Index
     return render_template("index.html", sitekey=CF_TURNSTILE_SITE_KEY)
 
+@app.route("/pc-dropoff", methods=["GET", "POST"])
+def pc_dropoff_page():
+    if request.method == "POST":
+        try:
+#           # Cloudflare Turnstile CAPTCHA validation
+#           turnstile_token = request.form.get("cf-turnstile-response")
+#           if not turnstile_token:
+#               flash("CAPTCHA verification failed. Please try again.", "danger")
+#               return redirect(url_for("home"))
+#
+#           turnstile_url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+#           turnstile_data = {
+#               "secret": CF_TURNSTILE_SECRET_KEY,
+#               "response": turnstile_token,
+#               "remoteip": request.remote_addr
+#           }
+#
+#           try:
+#               turnstile_response = requests.post(turnstile_url, data=turnstile_data)
+#               result = turnstile_response.json()
+#               if not result.get("success"):
+#                   logging.warning(f"Turnstile verification failed: {result}")
+#                   flash("CAPTCHA verification failed. Please try again.", "danger")
+#                   return redirect(url_for("home"))
+#           except Exception as e:
+#               logging.error(f"Turnstile verification error: {str(e)}")
+#               flash("Error verifying CAPTCHA. Please try again later.", "danger")
+#               return redirect(url_for("home"))
+#
+            # Process ticket submission
+            requestor_name = request.form["requestor_name"]
+            requestor_email = request.form["requestor_email"]
+            ticket_subject = request.form["ticket_subject"]
+            ticket_message = request.form["ticket_message"]
+            ticket_number = generate_ticket_number()
+
+            new_ticket = {
+                "ticket_number": ticket_number,
+                "requestor_name": requestor_name,
+                "requestor_email": requestor_email,
+                "ticket_subject": ticket_subject,
+                "ticket_message": ticket_message,
+                "request_type": "Request",
+                "ticket_impact": "Low",
+                "ticket_urgency": "Planning",
+                "ticket_status": "Open",
+                "submission_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "ticket_notes": []
+            }
+
+            tickets = load_tickets()
+            tickets.append(new_ticket)
+            save_tickets(tickets)
+            logging.info(f"{ticket_number} has been created.")
+
+            # Attempt to send a Confirmation Email via SMTP with logging and graceful error handling.
+            try:
+                email_body = render_template("/new-ticket-email.html", ticket=new_ticket)
+                send_email(requestor_email, f"{ticket_number} - {ticket_subject}", email_body, html=True)
+                logging.info(f"Confirmation Email for {ticket_number} sent successfully.")
+            except Exception as e:
+                logging.error(f"Failed to send email for {ticket_number}: {str(e)}")
+
+            # Attempt to send a Discord webhook notification with logging and graceful error handling.
+            try:
+                send_discord_notification(ticket_number, ticket_subject, ticket_message)
+            except Exception as e:
+                logging.error(f"Failed to send Discord notification for {ticket_number}: {str(e)}")
+            # Prompt the users web interface of a successful ticket submission.
+            flash(f"Ticket {ticket_number} has been submitted successfully!", "success")
+            return redirect(url_for("home"))
+
+        except Exception as e:
+            logging.critical(f"Failed to process ticket submission: {str(e)}")
+            return "An error occurred while submitting your ticket. Please try again later.", 500
+    # Refresh and Reload the Home/Index
+    return render_template("pc-dropoff.html", sitekey=CF_TURNSTILE_SITE_KEY)
+
 # Route/routine for the technician login page/process.
 @app.route("/login", methods=["GET", "POST"])
 def login():
@@ -397,4 +474,4 @@ def page_not_found(e):
     return render_template("404.html"), 404
 
 if __name__ == "__main__":
-    app.run() #debug=True
+    app.run(debug=True) #debug=True
